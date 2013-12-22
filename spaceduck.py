@@ -12,6 +12,15 @@ from Cheetah.Template import Template
 
 # Globals
 current_dir = dirname(abspath(__file__)) + sep
+config = {
+	'global': {
+		'server.socket_host': '0.0.0.0',
+		'server.socket_port': 9000,
+	}, 
+	'/': {
+		'tools.staticdir.root': current_dir,
+	},
+}
 
 class Webpage(object):
 	def index(self):
@@ -24,14 +33,3 @@ class Webpage(object):
 class run():
 	cherrypy.quickstart(Webpage(), '/', config)
 	cherrypy.engine.block()
-
-# Config
-config = {
-	'global': {
-		'server.socket_host': '0.0.0.0',
-		'server.socket_port': 9000,
-	}, 
-	'/': {
-		'tools.staticdir.root': current_dir,
-	},
-}
