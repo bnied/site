@@ -22,7 +22,7 @@ class Webpage(object):
 	index.exposed = True
 
 class run():
-	cherrypy.quickstart(WebPage(), '/', config)
+	cherrypy.quickstart(Webpage(), '/', config)
 	cherrypy.engine.block()
 
 # Config
