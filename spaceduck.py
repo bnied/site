@@ -11,25 +11,27 @@ from os.path import dirname, abspath, sep
 from Cheetah.Template import Template
 
 # Globals
-current_dir = dirname(abspath(__file__)) + sep
+currentDirectory = dirname(abspath(__file__)) + sep
 config = {
-	'global': {
-		'server.socket_host': '0.0.0.0',
-		'server.socket_port': 9000,
-	}, 
-	'/': {
-		'tools.staticdir.root': current_dir,
-	},
+    'global': {
+        'server.socket_host': '0.0.0.0',
+        'server.socket_port': 9000,
+    },
+    '/': {
+        'tools.staticdir.root': currentDirectory,
+    },
 }
 
+
 class Webpage(object):
-	def index(self):
-		htmlString = "<html>\n\t<head>\n\t\t<title>spaceduck.org</title>\n\t</head>\n\t<body>\n\t\tTesting 1 2 3\n\t</body>\n</html>"
+    def index(self):
+        page = Template(file="%s/../lib/index.tmpl" % currentDirectory)
 
-		return htmlString
+        return str(page)
 
-	index.exposed = True
+    index.exposed = True
+
 
 class run():
-	cherrypy.quickstart(Webpage(), '/', config)
-	cherrypy.engine.block()
+    cherrypy.quickstart(Webpage(), '/', config)
+    cherrypy.engine.block()
