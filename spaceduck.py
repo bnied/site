@@ -6,32 +6,19 @@ spaceduck.org site
 Let's make a site!!! yay!!
 '''
 
-import cherrypy
+from bottle import route, run, template
 from os.path import dirname, abspath, sep
 from Cheetah.Template import Template
 
 # Globals
 currentDirectory = dirname(abspath(__file__)) + sep
-config = {
-    'global': {
-        'server.socket_host': '0.0.0.0',
-        'server.socket_port': 9000,
-    },
-    '/': {
-        'tools.staticdir.root': currentDirectory,
-    },
-}
+host = '0.0.0.0'
+port = 9000
 
-
-class Webpage(object):
-    def index(self):
-        page = Template(file="%s/../lib/index.tmpl" % currentDirectory)
-
-        return str(page)
-
-    index.exposed = True
-
+@route('/')
+def index():
+    page = str(Template(file="%s/lib/index.tmpl" % currentDirectory))
+    return template(page)
 
 class run():
-    cherrypy.quickstart(Webpage(), '/', config)
-    cherrypy.engine.block()
+    run(host = host, port = port)
