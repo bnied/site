@@ -1,0 +1,559 @@
+/* ═══════════════════════════════════════════════════════════
+   PHOSPHOR CRT TERMINAL
+   Aesthetic: 1980s server-room phosphor monitor
+   P1 green primary, P3 amber accents
+   ═══════════════════════════════════════════════════════════ */
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* ── Phosphor greens ── */
+  --p1:          #33ff33;
+  --p1-dim:      #20cc20;
+  --p1-faint:    #0a660a;
+  --p1-glow:     rgba(51, 255, 51, 0.4);
+  --p1-bloom:    rgba(51, 255, 51, 0.15);
+
+  /* ── Amber accents ── */
+  --amber:       #ffb000;
+  --amber-dim:   #cc8d00;
+  --amber-glow:  rgba(255, 176, 0, 0.35);
+
+  /* ── Surface ── */
+  --bg:          #0a0a0a;
+  --bg-screen:   #050505;
+  --border:      #1a3a1a;
+
+  /* ── Semantics ── */
+  --text:        var(--p1-dim);
+  --text-bright: var(--p1);
+  --heading:     var(--amber);
+  --accent:      var(--p1);
+  --highlight:   var(--amber-dim);
+  --comment:     var(--p1-faint);
+  --prompt-user: var(--p1);
+  --prompt-sep:  var(--p1-faint);
+  --prompt-path: var(--amber);
+  --prompt-dollar: var(--p1-dim);
+  --link:        var(--amber);
+  --error:       #ff4444;
+}
+
+/* ═══ Theme: Amber ═════════════════════════════════════════ */
+
+[data-theme="amber"] {
+  --p1:          #ffb000;
+  --p1-dim:      #cc8d00;
+  --p1-faint:    #664700;
+  --p1-glow:     rgba(255, 176, 0, 0.4);
+  --p1-bloom:    rgba(255, 176, 0, 0.15);
+
+  --amber:       #ffe0a0;
+  --amber-dim:   #ffc860;
+  --amber-glow:  rgba(255, 224, 160, 0.35);
+
+  --border:      #3a2a0a;
+
+  --text:        var(--p1-dim);
+  --text-bright: var(--p1);
+  --heading:     var(--amber);
+  --accent:      var(--p1);
+  --highlight:   var(--amber-dim);
+  --comment:     var(--p1-faint);
+  --prompt-user: var(--p1);
+  --prompt-sep:  var(--p1-faint);
+  --prompt-path: var(--amber);
+  --prompt-dollar: var(--p1-dim);
+  --link:        var(--amber);
+}
+
+/* ═══ Theme: Blue ══════════════════════════════════════════ */
+
+[data-theme="blue"] {
+  --p1:          #5599ff;
+  --p1-dim:      #3a7adf;
+  --p1-faint:    #1a3a6f;
+  --p1-glow:     rgba(85, 153, 255, 0.4);
+  --p1-bloom:    rgba(85, 153, 255, 0.15);
+
+  --amber:       #88ccff;
+  --amber-dim:   #66aaee;
+  --amber-glow:  rgba(136, 204, 255, 0.35);
+
+  --border:      #0a1a3a;
+
+  --text:        var(--p1-dim);
+  --text-bright: var(--p1);
+  --heading:     var(--amber);
+  --accent:      var(--p1);
+  --highlight:   var(--amber-dim);
+  --comment:     var(--p1-faint);
+  --prompt-user: var(--p1);
+  --prompt-sep:  var(--p1-faint);
+  --prompt-path: var(--amber);
+  --prompt-dollar: var(--p1-dim);
+  --link:        var(--amber);
+}
+
+/* ═══ Theme: High Contrast ═════════════════════════════════ */
+
+[data-theme="high-contrast"] {
+  --p1:          #ffffff;
+  --p1-dim:      #f0f0f0;
+  --p1-faint:    #888888;
+  --p1-glow:     rgba(255, 255, 255, 0.3);
+  --p1-bloom:    rgba(255, 255, 255, 0.1);
+
+  --amber:       #ffff00;
+  --amber-dim:   #ffdd00;
+  --amber-glow:  rgba(255, 255, 0, 0.35);
+
+  --bg:          #000000;
+  --bg-screen:   #000000;
+  --border:      #555555;
+
+  --text:        var(--p1-dim);
+  --text-bright: var(--p1);
+  --heading:     var(--amber);
+  --accent:      var(--p1);
+  --highlight:   var(--amber-dim);
+  --comment:     var(--p1-faint);
+  --prompt-user: var(--p1);
+  --prompt-sep:  var(--p1-faint);
+  --prompt-path: var(--amber);
+  --prompt-dollar: var(--p1-dim);
+  --link:        var(--amber);
+  --error:       #ff4444;
+}
+
+/* ═══ Theme: Colorblind (Deuteranopia-safe) ════════════════ */
+
+[data-theme="colorblind"] {
+  --p1:          #56b4e9;
+  --p1-dim:      #4898c8;
+  --p1-faint:    #245a78;
+  --p1-glow:     rgba(86, 180, 233, 0.4);
+  --p1-bloom:    rgba(86, 180, 233, 0.15);
+
+  --amber:       #e69f00;
+  --amber-dim:   #cc8b00;
+  --amber-glow:  rgba(230, 159, 0, 0.35);
+
+  --border:      #1a2a3a;
+
+  --text:        var(--p1-dim);
+  --text-bright: var(--p1);
+  --heading:     var(--amber);
+  --accent:      var(--p1);
+  --highlight:   var(--amber-dim);
+  --comment:     var(--p1-faint);
+  --prompt-user: var(--p1);
+  --prompt-sep:  var(--p1-faint);
+  --prompt-path: var(--amber);
+  --prompt-dollar: var(--p1-dim);
+  --link:        var(--amber);
+}
+
+html, body {
+  height: 100%;
+  background: #000;
+  color: var(--text);
+  font-family: 'Fira Code', monospace;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.65;
+  overflow: hidden;
+  cursor: default;
+}
+
+::selection {
+  background: var(--p1-faint);
+  color: var(--p1);
+}
+
+/* ═══ CRT Power-On Animation ═══════════════════════════════ */
+
+#power-on {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #000;
+  animation: powerOn 1.8s ease-out forwards;
+}
+
+#power-on::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--p1);
+  box-shadow: 0 0 30px 10px var(--p1-glow), 0 0 80px 20px var(--p1-bloom);
+  transform: translateY(-50%) scaleY(1);
+  animation: powerLine 1.8s ease-out forwards;
+}
+
+@keyframes powerOn {
+  0%, 30%  { opacity: 1; }
+  60%      { opacity: 1; }
+  100%     { opacity: 0; pointer-events: none; }
+}
+
+@keyframes powerLine {
+  0%       { transform: translateY(-50%) scaleY(1) scaleX(0.3); opacity: 1; }
+  20%      { transform: translateY(-50%) scaleY(1) scaleX(1); opacity: 1; }
+  50%      { transform: translateY(-50%) scaleY(200) scaleX(1); opacity: 0.6; }
+  70%      { transform: translateY(-50%) scaleY(800) scaleX(1); opacity: 0.3; }
+  100%     { transform: translateY(-50%) scaleY(800) scaleX(1); opacity: 0; }
+}
+
+/* ═══ CRT Shell ════════════════════════════════════════════ */
+
+#crt {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  padding: 16px;
+}
+
+#screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 1200px;
+  background: var(--bg-screen);
+  border-radius: 12px;
+  overflow: hidden;
+  /* Subtle barrel distortion */
+  box-shadow:
+    inset 0 0 80px rgba(0, 0, 0, 0.8),
+    0 0 2px var(--p1-faint),
+    0 0 20px rgba(51, 255, 51, 0.03);
+  animation: flicker 8s infinite;
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  92%      { opacity: 1; }
+  93%      { opacity: 0.96; }
+  94%      { opacity: 1; }
+  96%      { opacity: 0.98; }
+  97%      { opacity: 1; }
+}
+
+/* ═══ Scanlines ════════════════════════════════════════════ */
+
+#scanlines {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 1px,
+    rgba(0, 0, 0, 0.15) 1px,
+    rgba(0, 0, 0, 0.15) 2px
+  );
+  animation: scanDrift 12s linear infinite;
+}
+
+#scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(51, 255, 51, 0.02) 50%,
+    transparent 100%
+  );
+  height: 33%;
+  animation: scanBar 6s ease-in-out infinite;
+}
+
+@keyframes scanDrift {
+  from { background-position: 0 0; }
+  to   { background-position: 0 4px; }
+}
+
+@keyframes scanBar {
+  0%, 100% { transform: translateY(-10%); }
+  50%      { transform: translateY(320%); }
+}
+
+/* ═══ Noise Canvas ═════════════════════════════════════════ */
+
+#noise {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  width: 100%;
+  height: 100%;
+  opacity: 0.035;
+  mix-blend-mode: screen;
+}
+
+/* ═══ Vignette ═════════════════════════════════════════════ */
+
+#screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 11;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 50%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  border-radius: 12px;
+}
+
+/* ═══ Terminal ═════════════════════════════════════════════ */
+
+#terminal {
+  position: relative;
+  z-index: 5;
+  height: 100%;
+  padding: 28px 32px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+#terminal::-webkit-scrollbar {
+  width: 4px;
+}
+#terminal::-webkit-scrollbar-track {
+  background: transparent;
+}
+#terminal::-webkit-scrollbar-thumb {
+  background: var(--p1-faint);
+  border-radius: 2px;
+}
+
+/* ═══ Output ═══════════════════════════════════════════════ */
+
+#output {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* ── Line types ── */
+
+.line {
+  min-height: 1.65em;
+  text-shadow: 0 0 8px var(--p1-bloom);
+}
+
+.line-heading {
+  color: var(--heading);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-shadow: 0 0 10px var(--amber-glow), 0 0 30px rgba(255, 176, 0, 0.1);
+  margin-top: 0.5em;
+}
+
+.line-accent {
+  color: var(--text-bright);
+  font-weight: 700;
+  text-shadow: 0 0 8px var(--p1-glow), 0 0 20px var(--p1-bloom);
+}
+
+.line-highlight {
+  color: var(--highlight);
+  text-shadow: 0 0 8px var(--amber-glow);
+}
+
+.line-comment {
+  color: var(--comment);
+  font-style: italic;
+  text-shadow: none;
+}
+
+.line-prompt {
+  color: var(--text);
+}
+
+.line-system {
+  color: var(--p1-faint);
+  font-size: 0.9em;
+  text-shadow: none;
+}
+
+.line-ok {
+  color: var(--p1);
+  text-shadow: 0 0 6px var(--p1-glow);
+}
+
+.line-link a {
+  color: var(--link);
+  text-decoration: none;
+  border-bottom: 1px solid var(--amber-dim);
+  transition: all 0.2s;
+  text-shadow: 0 0 8px var(--amber-glow);
+}
+.line-link a:hover {
+  color: var(--amber);
+  border-color: var(--amber);
+  text-shadow: 0 0 12px var(--amber-glow), 0 0 30px rgba(255, 176, 0, 0.15);
+}
+
+.line-separator {
+  color: var(--p1-faint);
+  user-select: none;
+  text-shadow: none;
+  opacity: 0.6;
+}
+
+.line-bullet {
+  padding-left: 2ch;
+}
+.line-bullet::before {
+  content: '> ';
+  color: var(--p1-faint);
+}
+
+/* ── Fade-in for new lines ── */
+.line-enter {
+  animation: lineReveal 0.15s ease-out forwards;
+}
+
+@keyframes lineReveal {
+  from { opacity: 0; transform: translateY(2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══ ASCII Art ════════════════════════════════════════════ */
+
+.ascii-art {
+  color: var(--p1);
+  font-size: 12px;
+  line-height: 1.15;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px var(--p1-glow), 0 0 40px var(--p1-bloom);
+}
+
+/* ═══ Input Line ═══════════════════════════════════════════ */
+
+#input-line {
+  display: flex;
+  align-items: center;
+  margin-top: 0.4em;
+  min-height: 1.65em;
+}
+
+.prompt {
+  color: var(--prompt-user);
+  white-space: pre;
+  flex-shrink: 0;
+  text-shadow: 0 0 8px var(--p1-bloom);
+}
+
+.prompt-sep  { color: var(--prompt-sep); }
+.prompt-path { color: var(--prompt-path); text-shadow: 0 0 8px var(--amber-glow); }
+.prompt-dollar { color: var(--prompt-dollar); }
+
+#input-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+#input-sizer {
+  visibility: hidden;
+  white-space: pre;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  min-width: 1px;
+}
+
+#cmd-input {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-bright);
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  caret-color: transparent;
+  text-shadow: 0 0 8px var(--p1-glow);
+}
+
+.cursor {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.15em;
+  background: var(--p1);
+  box-shadow: 0 0 6px var(--p1-glow), 0 0 15px var(--p1-bloom);
+  animation: cursorBlink 1s step-end infinite;
+  vertical-align: text-bottom;
+  flex-shrink: 0;
+}
+
+@keyframes cursorBlink {
+  50% { opacity: 0; }
+}
+
+/* ═══ Tab Completion Ghost ═════════════════════════════════ */
+
+#tab-ghost {
+  color: var(--p1-faint);
+  text-shadow: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ═══ DOOM ═════════════════════════════════════════════════ */
+
+#doom-container {
+  background: #000;
+}
+
+#doom-container canvas,
+#doom-container iframe,
+#doom-container .emulator-container {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+#doom-overlay .jsdos-player-container,
+#doom-overlay .jsdos-canvas-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ═══ Responsive ═══════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  html, body { font-size: 12px; }
+  #crt { padding: 8px; }
+  #terminal { padding: 16px 14px; }
+  #screen { border-radius: 8px; }
+  .ascii-art { font-size: 7.5px; letter-spacing: 0.5px; }
+}
+
+@media (max-width: 480px) {
+  html, body { font-size: 11px; }
+  #terminal { padding: 12px 10px; }
+  .ascii-art { font-size: 5.5px; letter-spacing: 0; }
+  .line-heading { letter-spacing: 0.08em; }
+}
