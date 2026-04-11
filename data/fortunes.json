@@ -1,0 +1,22 @@
+[
+  "It's not DNS. There's no way it's DNS. It was DNS.",
+  "There are only two hard things in CS: cache invalidation, naming things, and off-by-one errors.",
+  "Monitoring is not observability. But it's a start.",
+  "The cloud is just someone else's computer that's on fire.",
+  "Have you tried turning it off and on again?",
+  "It works on my machine. Ship the machine.",
+  "There is no such thing as a temporary fix.",
+  "The first rule of SRE: don't page someone who can't fix the problem.",
+  "Nines don't matter if users aren't happy.",
+  "Everything fails all the time. -- Werner Vogels",
+  "Hope is not a strategy.",
+  "If you haven't tested your backups, you don't have backups.",
+  "There are two types of sysadmins: those who have lost data, and those who will.",
+  "chmod 777 is not a fix.",
+  "Friends don't let friends write to /dev/null without logging first.",
+  "A distributed system is one where a computer you didn't even know existed can break your system.",
+  "To err is human; to really foul things up requires root access.",
+  "Weeks of coding can save you hours of planning.",
+  "The best incident is the one that never happens. The second best is the one you learn from.",
+  "Remember: 'rm -rf /' is a career-limiting move."
+]

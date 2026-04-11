@@ -8,28 +8,10 @@
   const noiseCanvas = document.getElementById("noise");
   const pageLoadTime = Date.now();
 
-  const FORTUNES = [
-    "It's not DNS. There's no way it's DNS. It was DNS.",
-    "There are only two hard things in CS: cache invalidation, naming things, and off-by-one errors.",
-    "Monitoring is not observability. But it's a start.",
-    "The cloud is just someone else's computer that's on fire.",
-    "Have you tried turning it off and on again?",
-    "It works on my machine. Ship the machine.",
-    "There is no such thing as a temporary fix.",
-    "The first rule of SRE: don't page someone who can't fix the problem.",
-    "Nines don't matter if users aren't happy.",
-    "Everything fails all the time. -- Werner Vogels",
-    "Hope is not a strategy.",
-    "If you haven't tested your backups, you don't have backups.",
-    "There are two types of sysadmins: those who have lost data, and those who will.",
-    "chmod 777 is not a fix.",
-    "Friends don't let friends write to /dev/null without logging first.",
-    "A distributed system is one where a computer you didn't even know existed can break your system.",
-    "To err is human; to really foul things up requires root access.",
-    "Weeks of coding can save you hours of planning.",
-    "The best incident is the one that never happens. The second best is the one you learn from.",
-    "Remember: 'rm -rf /' is a career-limiting move.",
-  ];
+  // ── Data (loaded from JSON) ──────────────────────────
+  let FORTUNES, ASCII_NAME, sections, experienceDetail, helpText;
+  let EXP_KEYS, COMMANDS, THEME_NAMES;
+  let DATA = {}; // easter-eggs and ascii data
 
   // ── Cursor sync ──────────────────────────────────────
 
@@ -69,343 +51,56 @@
     drawNoise();
   }
 
-  // ── Section data ─────────────────────────────────────
+  // ── Constants ─────────────────────────────────────────
 
   const SEP = "══════════════════════════════════════════════════════════════";
   const SEP_THIN = "──────────────────────────────────────────────────────────────";
 
-  const ASCII_NAME = [
-    " ██████╗ ███████╗███╗   ██╗     ███╗   ██╗██╗███████╗██████╗ ",
-    " ██╔══██╗██╔════╝████╗  ██║     ████╗  ██║██║██╔════╝██╔══██╗",
-    " ██████╔╝█████╗  ██╔██╗ ██║     ██╔██╗ ██║██║█████╗  ██║  ██║",
-    " ██╔══██╗██╔══╝  ██║╚██╗██║     ██║╚██╗██║██║██╔══╝  ██║  ██║",
-    " ██████╔╝███████╗██║ ╚████║     ██║ ╚████║██║███████╗██████╔╝",
-    " ╚═════╝ ╚══════╝╚═╝  ╚═══╝     ╚═╝  ╚═══╝╚═╝╚══════╝╚═════╝ ",
-  ];
+  // ── Data loader ──────────────────────────────────────
 
-  const sections = {
-    about: [
-      { text: SEP, cls: "line-separator" },
-      { text: "  ABOUT", cls: "line-heading" },
-      { text: SEP, cls: "line-separator" },
-      { text: "" },
-      { text: "  Site Reliability Engineer with over a decade of" },
-      { text: "  professional experience building and operating" },
-      { text: "  infrastructure at scale." },
-      { text: "" },
-      { text: "  Experienced. Independent. Results-oriented.", cls: "line-accent" },
-      { text: "" },
-      { text: "  Certified Kubernetes Administrator (CKA), 2020", cls: "line-highlight" },
-      { text: "" },
-    ],
+  function resolveSEP(lines) {
+    return lines.map(l => ({
+      ...l,
+      text: l.text === "SEP" ? SEP : l.text === "SEP_THIN" ? SEP_THIN : l.text,
+    }));
+  }
 
-    contact: [
-      { text: SEP, cls: "line-separator" },
-      { text: "  CONTACT", cls: "line-heading" },
-      { text: SEP, cls: "line-separator" },
-      { text: "" },
-      { text: "  email     bnied@spaceduck.org", cls: "line-accent" },
-      { text: "  github    <a href=\"https://github.com/bnied\">github.com/bnied</a>", cls: "line-link" },
-      { text: "  linkedin  <a href=\"https://www.linkedin.com/in/bnied\">linkedin.com/in/bnied</a>", cls: "line-link" },
-      { text: "" },
-    ],
+  async function loadData() {
+    const [sectionsData, expData, helpData, fortunesData, asciiData, eggsData] = await Promise.all([
+      fetch("data/sections.json").then(r => r.json()),
+      fetch("data/experience.json").then(r => r.json()),
+      fetch("data/help.json").then(r => r.json()),
+      fetch("data/fortunes.json").then(r => r.json()),
+      fetch("data/ascii.json").then(r => r.json()),
+      fetch("data/easter-eggs.json").then(r => r.json()),
+    ]);
 
-    skills: [
-      { text: SEP, cls: "line-separator" },
-      { text: "  SKILLS", cls: "line-heading" },
-      { text: SEP, cls: "line-separator" },
-      { text: "" },
-      { text: "  Kubernetes & Containers", cls: "line-highlight" },
-      { text: "Cluster provisioning from scratch, bare metal -> k8s migrations", cls: "line-bullet" },
-      { text: "Helm charts, Docker Swarm -> k8s, zero-downtime upgrades", cls: "line-bullet" },
-      { text: "Maintaining and repairing clusters for full lifetime", cls: "line-bullet" },
-      { text: "Event-driven Kubernetes automation", cls: "line-bullet" },
-      { text: "" },
-      { text: "  Configuration Management", cls: "line-highlight" },
-      { text: "Puppet, Chef, Saltstack", cls: "line-bullet" },
-      { text: "" },
-      { text: "  Operating Systems", cls: "line-highlight" },
-      { text: "RHEL, Oracle Linux, CentOS, Fedora, Ubuntu", cls: "line-bullet" },
-      { text: "macOS, FreeBSD, OpenBSD", cls: "line-bullet" },
-      { text: "" },
-      { text: "  Languages", cls: "line-highlight" },
-      { text: "Python, Rust, Ruby", cls: "line-bullet" },
-      { text: "C, C++, Objective-C, Kotlin, Swift", cls: "line-bullet" },
-      { text: "" },
-      { text: "  Hardware & Infrastructure", cls: "line-highlight" },
-      { text: "Assembly, configuration, diagnosis, migration, repair, replacement", cls: "line-bullet" },
-      { text: "Extensive experience in systems design, development, deployment,", cls: "line-bullet" },
-      { text: "    and operations at scale" },
-      { text: "" },
-    ],
+    // Resolve SEP placeholders in all line arrays
+    sections = {};
+    for (const [k, v] of Object.entries(sectionsData)) {
+      sections[k] = resolveSEP(v);
+    }
 
-    experience: [
-      { text: SEP, cls: "line-separator" },
-      { text: "  EXPERIENCE", cls: "line-heading" },
-      { text: SEP, cls: "line-separator" },
-      { text: "" },
-      { text: "  APPLE                                          2018 - Present", cls: "line-accent" },
-      { text: "  SRE // ASE Cassandra                           2021 - Present", cls: "line-highlight" },
-      { text: "  SRE // ACI Postgres                            2020 - 2021", cls: "line-highlight" },
-      { text: "  SRE // ACI Observability                       2018 - 2020", cls: "line-highlight" },
-      { text: "" },
-      { text: "  LINKEDIN, INC                                  2016 - 2018", cls: "line-accent" },
-      { text: "  Senior Site Reliability Engineer", cls: "line-highlight" },
-      { text: "" },
-      { text: "  WORK MARKET, INC                               2015 - 2016", cls: "line-accent" },
-      { text: "  Senior DevOps Engineer", cls: "line-highlight" },
-      { text: "" },
-      { text: "  SHUTTERSTOCK, INC                              2013 - 2015", cls: "line-accent" },
-      { text: "  Site Reliability Engineer", cls: "line-highlight" },
-      { text: "" },
-      { text: "  DATAPIPE, INC                                  2008 - 2013", cls: "line-accent" },
-      { text: "  Datacenter Technician / Operational Support Engineer", cls: "line-highlight" },
-      { text: "" },
-      { text: "  For details, run:  experience &lt;role&gt;", cls: "line-comment" },
-      { text: "  e.g. 'experience apple-cassandra'", cls: "line-comment" },
-      { text: "" },
-      { text: "  available roles:", cls: "line-comment" },
-      { text: "    apple-cassandra   apple-postgres   apple-observability", cls: "line-comment" },
-      { text: "    linkedin          workmarket       shutterstock", cls: "line-comment" },
-      { text: "    datapipe", cls: "line-comment" },
-      { text: "" },
-    ],
+    experienceDetail = {};
+    for (const [k, v] of Object.entries(expData)) {
+      experienceDetail[k] = resolveSEP(v);
+    }
 
-    projects: [
-      { text: SEP, cls: "line-separator" },
-      { text: "  PROJECTS", cls: "line-heading" },
-      { text: SEP, cls: "line-separator" },
-      { text: "" },
-      { text: "  ls-rust", cls: "line-accent" },
-      { text: "  <a href=\"https://github.com/bnied/ls-rust\">github.com/bnied/ls-rust</a>", cls: "line-link" },
-      { text: "  An implementation of ls written in Rust." },
-      { text: "" },
-      { text: "  kernel-ml-aufs", cls: "line-accent" },
-      { text: "  <a href=\"https://github.com/bnied/kernel-ml-aufs\">github.com/bnied/kernel-ml-aufs</a>", cls: "line-link" },
-      { text: "  Mainline Linux kernel packages for RHEL/CentOS/OEL 7 & 8" },
-      { text: "  AUFS storage driver for Docker." },
-      { text: "" },
-      { text: "  kernel-lt-aufs", cls: "line-accent" },
-      { text: "  <a href=\"https://github.com/bnied/kernel-lt-aufs\">github.com/bnied/kernel-lt-aufs</a>", cls: "line-link" },
-      { text: "  Longterm support kernel packages for RHEL/CentOS 6 & 7" },
-      { text: "  with AUFS support for Docker." },
-      { text: "" },
-      { text: "  optopus", cls: "line-accent" },
-      { text: "  <a href=\"https://github.com/optopus/optopus\">github.com/optopus/optopus</a>", cls: "line-link" },
-      { text: "  CMDB for tracking servers and networking equipment." },
-      { text: "" },
-      { text: "  optopus-ldap-admin", cls: "line-accent" },
-      { text: "  <a href=\"https://github.com/optopus/optopus-ldap-admin\">github.com/optopus/optopus-ldap-admin</a>", cls: "line-link" },
-      { text: "  Optopus plugin for LDAP administration." },
-      { text: "" },
-    ],
+    helpText = resolveSEP(helpData);
+    FORTUNES = fortunesData;
+    ASCII_NAME = asciiData.name;
+    DATA = { ...asciiData, ...eggsData };
 
-    education: [
-      { text: SEP, cls: "line-separator" },
-      { text: "  EDUCATION", cls: "line-heading" },
-      { text: SEP, cls: "line-separator" },
-      { text: "" },
-      { text: "  Fairleigh Dickinson University          2005 - 2007", cls: "line-accent" },
-      { text: "  B.S. in Computer Science" },
-      { text: "" },
-      { text: "  Sussex County Community College         2003 - 2005", cls: "line-accent" },
-      { text: "  A.S. in Computer Science" },
-      { text: "" },
-    ],
-  };
-
-  // ── Experience detail sub-sections ────────────────────
-
-  const experienceDetail = {
-    "apple-cassandra": [
-      { text: SEP, cls: "line-separator" },
-      { text: "  APPLE // ASE Cassandra", cls: "line-heading" },
-      { text: "  Site Reliability Engineer                      2021 - Present", cls: "line-highlight" },
-      { text: SEP, cls: "line-separator" },
-      { text: "" },
-      { text: "Wrote daemon to monitor Cassandra pods in k8s namespaces, track", cls: "line-bullet" },
-      { text: "    operational states, and auto-replace pods in inoperative states" },
-      { text: "    past pre-configured durations" },
-      { text: "Wrote daemon to monitor k8s cluster hosts for issues and auto-replace", cls: "line-bullet" },
-      { text: "    running Cassandra pods when hosts have specific conditions or" },
-      { text: "    taints past pre-configured durations" },
-      { text: "Headed project to migrate entire fleet to new monitoring solution", cls: "line-bullet" },
-      { text: "    with better dashboarding, flexible querying, and alerting" },
-      { text: "Added code to bespoke Cassandra cqlsh tool to support new container", cls: "line-bullet" },
-      { text: "    runtimes and improve overall reliability" },
-      { text: "Maintained and updated the group's Slackbot, transforming it from", cls: "line-bullet" },
-      { text: "    a skunkworks project to an indispensable tool for on-call operators" },
-      { text: "" },
-    ],
-
-    "apple-postgres": [
-      { text: SEP, cls: "line-separator" },
-      { text: "  APPLE // ACI Postgres", cls: "line-heading" },
-      { text: "  Site Reliability Engineer                      2020 - 2021", cls: "line-highlight" },
-      { text: SEP, cls: "line-separator" },
-      { text: "" },
-      { text: "Planned & executed migration of 2000+ customer PostgreSQL", cls: "line-bullet" },
-      { text: "    instances to newer version before EOL, coordinating across teams" },
-      { text: "Planned & executed effort to offer newer PostgreSQL version", cls: "line-bullet" },
-      { text: "    as part of larger upgrade project targeting 6-month rollout" },
-      { text: "Devised, wrote, and presented freeze-bypass stability validation", cls: "line-bullet" },
-      { text: "    procedure for services during critical periods" },
-      { text: "Devised, piloted, and implemented team-level systems to ensure", cls: "line-bullet" },
-      { text: "    fair coverage of vital functions with proper visibility" },
-      { text: "Ensured prioritization consistency between team and management", cls: "line-bullet" },
-      { text: "Improved team documentation, runbooks, procedures, and on-call load", cls: "line-bullet" },
-      { text: "Inherited & led org-wide initiative to improve learning resources", cls: "line-bullet" },
-      { text: "    for new SREs joining Apple Cloud Services (ACS), spanning" },
-      { text: "    multiple teams including SREs, developers, and cloud advocates" },
-      { text: "" },
-    ],
-
-    "apple-observability": [
-      { text: SEP, cls: "line-separator" },
-      { text: "  APPLE // ACI Observability", cls: "line-heading" },
-      { text: "  Site Reliability Engineer                      2018 - 2020", cls: "line-highlight" },
-      { text: SEP, cls: "line-separator" },
-      { text: "" },
-      { text: "Technical lead for ACI SRE Observability; set technical direction", cls: "line-bullet" },
-      { text: "    for SRE teams around platform operations and migration planning" },
-      { text: "Mentored junior team members on coding and code-release practices,", cls: "line-bullet" },
-      { text: "    enabling completion of key projects and raising team skill level" },
-      { text: "Built, maintained, and serviced self-hosted Kubernetes clusters", cls: "line-bullet" },
-      { text: "Planned & executed migration from Docker Swarm to self-hosted k8s;", cls: "line-bullet" },
-      { text: "    20+ apps in multiple languages with several data backends" },
-      { text: "Created, maintained, and deployed Helm charts for k8s migrations", cls: "line-bullet" },
-      { text: "Wrote runbooks and docs on all aspects of Kubernetes ownership:", cls: "line-bullet" },
-      { text: "    cluster creation, migration, and repair without downtime" },
-      { text: "Maintained fleet of Kubernetes clusters including maintenances,", cls: "line-bullet" },
-      { text: "    repair, and zero-downtime upgrades" },
-      { text: "Headed initiative to get SREs involved in next-gen telemetry", cls: "line-bullet" },
-      { text: "Peer-reviewed code to ensure solutions met requirements", cls: "line-bullet" },
-      { text: "Led initiative to reduce operational toil by streamlining alerts,", cls: "line-bullet" },
-      { text: "    removing unnecessary alerts, and ensuring clear system visibility" },
-      { text: "Supported team as educational resource after departure", cls: "line-bullet" },
-      { text: "" },
-    ],
-
-    "linkedin": [
-      { text: SEP, cls: "line-separator" },
-      { text: "  LINKEDIN, INC", cls: "line-heading" },
-      { text: "  Senior Site Reliability Engineer               2016 - 2018", cls: "line-highlight" },
-      { text: SEP, cls: "line-separator" },
-      { text: "" },
-      { text: "Led team building host-level chaos engineering as part of", cls: "line-bullet" },
-      { text: "    LinkedIn's Waterbear initiative, improving reliability" },
-      { text: "Wrote code for CPU-level and network-level chaos engineering", cls: "line-bullet" },
-      { text: "Presented host-level chaos initiative at SaltConf17", cls: "line-bullet" },
-      { text: "Led weekly design review meeting in the New York office,", cls: "line-bullet" },
-      { text: "    allowing developers to present plans before wider RFC scrutiny" },
-      { text: "Contributed code to monitoring system for new and existing services", cls: "line-bullet" },
-      { text: "Created solutions for dev teams to monitor service health at a glance", cls: "line-bullet" },
-      { text: "Created frontend and API for company-wide log aggregation service", cls: "line-bullet" },
-      { text: "Peer-reviewed code to ensure reliability of developer strategies", cls: "line-bullet" },
-      { text: "" },
-    ],
-
-    "workmarket": [
-      { text: SEP, cls: "line-separator" },
-      { text: "  WORK MARKET, INC", cls: "line-heading" },
-      { text: "  Senior DevOps Engineer                         2015 - 2016", cls: "line-highlight" },
-      { text: SEP, cls: "line-separator" },
-      { text: "" },
-      { text: "Contributed manifests and modules to Puppet config management tree", cls: "line-bullet" },
-      { text: "Contributed code to Fabric tree for admin tasks and deployments", cls: "line-bullet" },
-      { text: "Created solutions for easy provisioning of EC2-backed microservices", cls: "line-bullet" },
-      { text: "Assisted in automating RDS provisioning and configuration", cls: "line-bullet" },
-      { text: "Streamlined AMI creation into single pipeline using Packer", cls: "line-bullet" },
-      { text: "    with CIS hardening guidelines" },
-      { text: "Created system patching strategy allowing zero-downtime reboots", cls: "line-bullet" },
-      { text: "Created and documented procedures for production maintenances", cls: "line-bullet" },
-      { text: "Assisted in documenting procedures for rapid Puppet module creation", cls: "line-bullet" },
-      { text: "Added Puppet manifests for automatic collectd installation/config", cls: "line-bullet" },
-      { text: "Added Puppet code for collectd MySQL metrics collection", cls: "line-bullet" },
-      { text: "Started migration from Puppet to newer Saltstack codebase", cls: "line-bullet" },
-      { text: "" },
-    ],
-
-    "shutterstock": [
-      { text: SEP, cls: "line-separator" },
-      { text: "  SHUTTERSTOCK, INC", cls: "line-heading" },
-      { text: "  Site Reliability Engineer                      2013 - 2015", cls: "line-highlight" },
-      { text: SEP, cls: "line-separator" },
-      { text: "" },
-      { text: "Contributed manifests and modules to Puppet config management tree", cls: "line-bullet" },
-      { text: "Architected solution to scale Puppet beyond single master node", cls: "line-bullet" },
-      { text: "Spearheaded Chef-Solo migration for decentralized CM infrastructure", cls: "line-bullet" },
-      { text: "Ported Chef cookbooks to Ubuntu 14.04 and CentOS 7", cls: "line-bullet" },
-      { text: "Improved automation for DNS record and LDAP account management", cls: "line-bullet" },
-      { text: "Created tools to notify users of on-call assignments", cls: "line-bullet" },
-      { text: "Maintained Linux provisioning system; created automation for faster", cls: "line-bullet" },
-      { text: "    provisioning across larger numbers of servers" },
-      { text: "Maintained and improved CMDB and project deployment systems", cls: "line-bullet" },
-      { text: "Maintained and improved Jenkins CI; wrote dashboard to separate", cls: "line-bullet" },
-      { text: "    good/bad/unbuilt builds into groups and graph them" },
-      { text: "Migrated services from older build system to Jenkins-based system", cls: "line-bullet" },
-      { text: "" },
-    ],
-
-    "datapipe": [
-      { text: SEP, cls: "line-separator" },
-      { text: "  DATAPIPE, INC", cls: "line-heading" },
-      { text: "  Datacenter Technician / Operational Support    2008 - 2013", cls: "line-highlight" },
-      { text: SEP, cls: "line-separator" },
-      { text: "" },
-      { text: "Designed, implemented, and maintained new UNIX provisioning system", cls: "line-bullet" },
-      { text: "Tested Linux distributions for hardware compatibility; resolved issues", cls: "line-bullet" },
-      { text: "Developed custom client images tailored to specific needs", cls: "line-bullet" },
-      { text: "Designed and built remote CD/DVD burning solution for datacenter", cls: "line-bullet" },
-      { text: "Implemented and maintained new monitoring system", cls: "line-bullet" },
-      { text: "Designed supplemental apps for monitoring; wrote incident integration", cls: "line-bullet" },
-      { text: "Implemented and maintained ticketing/CMDB system; expanded as needed", cls: "line-bullet" },
-      { text: "Designed and implemented custom maintenance scripts", cls: "line-bullet" },
-      { text: "Maintained servers for Development team ensuring stability/uptime", cls: "line-bullet" },
-      { text: "Built system to track all server builds in progress", cls: "line-bullet" },
-      { text: "Built system to track pulled servers and drive grace period expiry", cls: "line-bullet" },
-      { text: "Built system to track inventory through RMA/QA process", cls: "line-bullet" },
-      { text: "Assembled server and networking hardware per customer orders", cls: "line-bullet" },
-      { text: "Installed Windows and UNIX OSes via PXE with post-install steps", cls: "line-bullet" },
-      { text: "Racked/cabled servers, ran power cables, set VLANs on switches", cls: "line-bullet" },
-      { text: "Tested Windows and UNIX deployment systems", cls: "line-bullet" },
-      { text: "Tested hardware for operating system compatibility", cls: "line-bullet" },
-      { text: "" },
-    ],
-  };
-
-  const EXP_KEYS = Object.keys(experienceDetail);
-
-  const THEME_NAMES = ["green", "amber", "blue", "high-contrast", "colorblind"];
-
-  const COMMANDS = [
-    "about", "skills", "experience", "projects", "education", "contact",
-    "all", "clear", "help", "theme",
-    ...EXP_KEYS.map(k => "experience " + k),
-    ...THEME_NAMES.map(t => "theme " + t),
-  ];
-
-  const helpText = [
-    { text: SEP, cls: "line-separator" },
-    { text: "  COMMANDS", cls: "line-heading" },
-    { text: SEP, cls: "line-separator" },
-    { text: "" },
-    { text: "  about         who I am", cls: "line-highlight" },
-    { text: "  skills        technical expertise", cls: "line-highlight" },
-    { text: "  experience    work history (overview)", cls: "line-highlight" },
-    { text: "  experience &lt;company&gt;", cls: "line-highlight" },
-    { text: "                drill into a specific role", cls: "line-comment" },
-    { text: "  projects      open-source work", cls: "line-highlight" },
-    { text: "  education     academic background", cls: "line-highlight" },
-    { text: "  contact       reach me", cls: "line-highlight" },
-    { text: "  all           show everything", cls: "line-highlight" },
-    { text: "  theme         change color theme", cls: "line-highlight" },
-    { text: "  clear         clear terminal", cls: "line-highlight" },
-    { text: "  help          this message", cls: "line-highlight" },
-    { text: "" },
-    { text: "  tip: press &lt;Tab&gt; to autocomplete", cls: "line-comment" },
-    { text: "" },
-  ];
+    // Derive computed arrays
+    EXP_KEYS = Object.keys(experienceDetail);
+    THEME_NAMES = ["green", "amber", "blue", "high-contrast", "colorblind"];
+    COMMANDS = [
+      "about", "skills", "experience", "projects", "education", "contact",
+      "all", "clear", "help", "theme",
+      ...EXP_KEYS.map(k => "experience " + k),
+      ...THEME_NAMES.map(t => "theme " + t),
+    ];
+  }
 
   // ── Rendering helpers ────────────────────────────────
 
@@ -464,19 +159,7 @@
   function boot() {
     const POST_DELAY = 1600; // wait for CRT power-on
 
-    const biosLines = [
-      { text: "", cls: "" },
-      { text: "  SPACEDUCK BIOS v3.14.159", cls: "line-system" },
-      { text: "  (c) 2026 spaceduck.org", cls: "line-system" },
-      { text: "", cls: "" },
-      { text: "  CPU .......... OK", cls: "line-system", delay: 80 },
-      { text: "  Memory ....... 640K ought to be enough", cls: "line-system", delay: 80 },
-      { text: "  Disk ......... OK", cls: "line-system", delay: 80 },
-      { text: "  Network ...... OK", cls: "line-system", delay: 80 },
-      { text: "", cls: "", delay: 200 },
-      { text: "  Loading profile...", cls: "line-system", delay: 300 },
-      { text: "", cls: "", delay: 100 },
-    ];
+    const biosLines = DATA.boot || [];
 
     const profileLines = [];
     ASCII_NAME.forEach(l => profileLines.push({ text: l, cls: "ascii-art", delay: 30 }));
@@ -831,40 +514,14 @@
     const upStr = uptimeHr > 0 ? `${uptimeHr} hours, ${uptimeMin % 60} mins` : `${uptimeMin} mins`;
     const theme = document.documentElement.getAttribute("data-theme") || "green";
 
-    const asciiRaw = [
-      "     _______       ",
-      "    /       \\      ",
-      "   / bnied   \\     ",
-      "  /   .dev    \\    ",
-      " /_______________\\  ",
-      " |  >_  |  >_  |  ",
-      " |_____|_____|__|  ",
-      " |               | ",
-      " |   [{SYSTEM}]  | ",
-      " |_______________| ",
-      "   /           \\   ",
-      "  /             \\  ",
-      " /_______._______\\ ",
-    ];
     const artW = 24;
-    const ascii = asciiRaw.map(l => l.padEnd(artW));
+    const ascii = (DATA.neofetch || []).map(l => l.padEnd(artW));
 
-    const info = [
-      { label: "visitor", value: "@bnied.dev", cls: "line-heading" },
-      { label: "", value: "──────────────────", cls: "line-separator" },
-      { label: "OS", value: "SPACEDUCK/Linux x86_64" },
-      { label: "Host", value: "bnied.dev" },
-      { label: "Kernel", value: "1.0.0-spaceduck" },
-      { label: "Uptime", value: upStr },
-      { label: "Shell", value: "bnied-sh 1.0" },
-      { label: "Terminal", value: "CRT Phosphor P1" },
-      { label: "Theme", value: theme },
-      { label: "CPU", value: "JavaScript V8 @ 60fps" },
-      { label: "Memory", value: "640K / 640K (100%)" },
-      { label: "Disk", value: "42K / unlimited" },
-      { label: "Font", value: "Fira Code 14px" },
-      { label: "Locale", value: navigator.language || "en-US" },
-    ];
+    // Build info from JSON template + dynamic values
+    const info = (DATA.neofetchInfo || []).map(item => ({ ...item }));
+    info.push({ label: "Uptime", value: upStr });
+    info.push({ label: "Theme", value: theme });
+    info.push({ label: "Locale", value: navigator.language || "en-US" });
 
     const maxLines = Math.max(ascii.length, info.length);
     for (let i = 0; i < maxLines; i++) {
@@ -997,14 +654,7 @@
   // ── docker ps ────────────────────────────────────────
 
   function runDockerPs() {
-    const containers = [
-      { id: "a1b2c3d4e5f6", image: "nginx:alpine",          cmd: '"/docker-entry..."', created: "2 hours ago",  status: "Up 2 hours",    ports: "0.0.0.0:443->443/tcp", name: "web-frontend" },
-      { id: "b2c3d4e5f6a7", image: "node:20-slim",          cmd: '"node server.js"',   created: "2 hours ago",  status: "Up 2 hours",    ports: "3000/tcp",              name: "api-server" },
-      { id: "c3d4e5f6a7b8", image: "postgres:16",            cmd: '"docker-entry..."',  created: "3 hours ago",  status: "Up 3 hours",    ports: "5432/tcp",              name: "postgres-db" },
-      { id: "d4e5f6a7b8c9", image: "redis:7-alpine",        cmd: '"redis-server"',     created: "3 hours ago",  status: "Up 3 hours",    ports: "6379/tcp",              name: "cache" },
-      { id: "e5f6a7b8c9d0", image: "prom/prometheus",       cmd: '"/bin/prometh..."',  created: "5 hours ago",  status: "Up 5 hours",    ports: "9090/tcp",              name: "prometheus" },
-      { id: "f6a7b8c9d0e1", image: "grafana/grafana",       cmd: '"/run.sh"',          created: "5 hours ago",  status: "Up 5 hours",    ports: "0.0.0.0:3001->3000/tcp", name: "grafana" },
-    ];
+    const containers = DATA.docker || [];
 
     addLine(`  <span class="line-comment">CONTAINER ID   IMAGE                    STATUS          PORTS                      NAMES</span>`, null, true);
     containers.forEach(c => {
@@ -1016,17 +666,7 @@
   // ── kubectl get pods ─────────────────────────────────
 
   function runKubectlPods() {
-    const pods = [
-      { name: "cassandra-node-0",        ready: "1/1", status: "Running",   restarts: "0",  age: "14d" },
-      { name: "cassandra-node-1",        ready: "1/1", status: "Running",   restarts: "0",  age: "14d" },
-      { name: "cassandra-node-2",        ready: "1/1", status: "Running",   restarts: "1",  age: "14d" },
-      { name: "cassandra-monitor-0",     ready: "1/1", status: "Running",   restarts: "0",  age: "7d" },
-      { name: "slackbot-7f8b9c-x4k2p",  ready: "1/1", status: "Running",   restarts: "0",  age: "3d" },
-      { name: "nginx-ingress-5d4c3-abc", ready: "1/1", status: "Running",   restarts: "0",  age: "21d" },
-      { name: "prometheus-0",            ready: "1/1", status: "Running",   restarts: "0",  age: "10d" },
-      { name: "grafana-6b7c8d-q9w2e",   ready: "1/1", status: "Running",   restarts: "2",  age: "10d" },
-      { name: "cqlsh-debug-pod",         ready: "0/1", status: "Completed", restarts: "0",  age: "1d" },
-    ];
+    const pods = DATA.kubectl || [];
 
     addLine(`  <span class="line-comment">NAME                            READY   STATUS      RESTARTS   AGE</span>`, null, true);
     pods.forEach(p => {
@@ -1040,15 +680,7 @@
   // ── git log ──────────────────────────────────────────
 
   function runGitLog() {
-    const commits = [
-      { hash: "a3f8c21", author: "Benjamin Nied", date: "2026-04-10", msg: "feat: add DOOM easter egg because why not" },
-      { hash: "e7b2d44", author: "Benjamin Nied", date: "2026-04-10", msg: "feat: add btop, cmatrix, neofetch commands" },
-      { hash: "c1a9f63", author: "Benjamin Nied", date: "2026-04-10", msg: "feat: color themes and tab completion" },
-      { hash: "b5d3e87", author: "Benjamin Nied", date: "2026-04-10", msg: "fix: cursor tracking next to typed characters" },
-      { hash: "9f4a2c1", author: "Benjamin Nied", date: "2026-04-10", msg: "feat: CRT power-on animation, phosphor glow" },
-      { hash: "7e6d8b3", author: "Benjamin Nied", date: "2026-04-10", msg: "feat: interactive terminal with resume data" },
-      { hash: "1a2b3c4", author: "Benjamin Nied", date: "2026-04-10", msg: "init: initial commit" },
-    ];
+    const commits = DATA.gitlog || [];
 
     commits.forEach(c => {
       addLine(`  <span class="line-highlight">${c.hash}</span> - ${escapeHTML(c.msg)}`, null, true);
@@ -1275,20 +907,7 @@
     btopEl.id = "btop-view";
     output.appendChild(btopEl);
 
-    const processes = [
-      { pid: 1,    user: "root",    cpu: 0.0, mem: 0.3, cmd: "systemd" },
-      { pid: 42,   user: "bnied",   cpu: 0.0, mem: 0.1, cmd: "sshd: bnied@pts/0" },
-      { pid: 137,  user: "bnied",   cpu: 0.0, mem: 0.2, cmd: "/bin/bash" },
-      { pid: 314,  user: "bnied",   cpu: 0.0, mem: 1.2, cmd: "node server.js" },
-      { pid: 420,  user: "postgres", cpu: 0.0, mem: 3.8, cmd: "postgres: writer" },
-      { pid: 421,  user: "postgres", cpu: 0.0, mem: 2.1, cmd: "postgres: autovacuum" },
-      { pid: 666,  user: "root",    cpu: 0.0, mem: 0.5, cmd: "[kworker/0:1-events]" },
-      { pid: 777,  user: "bnied",   cpu: 0.0, mem: 4.2, cmd: "kubectl proxy" },
-      { pid: 888,  user: "bnied",   cpu: 0.0, mem: 1.8, cmd: "python3 slackbot.py" },
-      { pid: 999,  user: "cassand", cpu: 0.0, mem: 12.4, cmd: "java -jar cassandra.jar" },
-      { pid: 1024, user: "bnied",   cpu: 0.0, mem: 0.8, cmd: "vim runbook.md" },
-      { pid: 1337, user: "bnied",   cpu: 0.0, mem: 0.1, cmd: "btop" },
-    ];
+    const processes = (DATA.btopProcesses || []).map(p => ({ ...p }));
 
     const cpuCores = 4;
     const cpuHistory = Array.from({ length: cpuCores }, () => Array(30).fill(0));
@@ -1660,32 +1279,7 @@
   // ── sl (steam locomotive) ─────────────────────────────
 
   function runSL() {
-    const trainFrames = [
-      [
-        "      ====        ________                ___________ ",
-        "  _D _|  |_______/        \\__I_I_____===__|_________| ",
-        "   |(_)---  |   H\\________/ |   |        =|___ ___|  ",
-        "   /     |  |   H  |  |     |   |         ||_| |_||  ",
-        "  |      |  |   H  |__--------------------| [___] |  ",
-        "  | ________|___H__/__|_____/[][]~\\_______|       |  ",
-        "  |/ |   |-----------I_____I [][] []  D   |=======|__ ",
-        "__/ =| o |=-~~\\  /~~\\  /~~\\  /~~\\ ____Y___________|__ ",
-        " |/-=|___|=    ||    ||    ||    |_____/~\\___/        ",
-        "  \\_/      \\O=====O=====O=====O_/      \\_/           ",
-      ],
-      [
-        "      ====        ________                ___________ ",
-        "  _D _|  |_______/        \\__I_I_____===__|_________| ",
-        "   |(_)---  |   H\\________/ |   |        =|___ ___|  ",
-        "   /     |  |   H  |  |     |   |         ||_| |_||  ",
-        "  |      |  |   H  |__--------------------| [___] |  ",
-        "  | ________|___H__/__|_____/[][]~\\_______|       |  ",
-        "  |/ |   |-----------I_____I [][] []  D   |=======|__ ",
-        "__/ =| o |=-~~\\  /~~\\  /~~\\  /~~\\ ____Y___________|__ ",
-        " |/-=|___|=O=====O=====O=====O   |_____/~\\___/        ",
-        "  \\_/      \\__/  \\__/  \\__/  \\__/      \\_/           ",
-      ],
-    ];
+    const trainFrames = DATA.train || [[]];
 
     const trainWidth = 58;
     const termWidth = Math.floor(terminal.clientWidth / 8.4); // approx char width
@@ -1802,5 +1396,5 @@
 
   // ── Init ─────────────────────────────────────────────
   initNoise();
-  boot();
+  loadData().then(() => boot());
 })();

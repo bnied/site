@@ -1,0 +1,21 @@
+[
+  { "text": "SEP", "cls": "line-separator" },
+  { "text": "  COMMANDS", "cls": "line-heading" },
+  { "text": "SEP", "cls": "line-separator" },
+  { "text": "" },
+  { "text": "  about         who I am", "cls": "line-highlight" },
+  { "text": "  skills        technical expertise", "cls": "line-highlight" },
+  { "text": "  experience    work history (overview)", "cls": "line-highlight" },
+  { "text": "  experience &lt;company&gt;", "cls": "line-highlight" },
+  { "text": "                drill into a specific role", "cls": "line-comment" },
+  { "text": "  projects      open-source work", "cls": "line-highlight" },
+  { "text": "  education     academic background", "cls": "line-highlight" },
+  { "text": "  contact       reach me", "cls": "line-highlight" },
+  { "text": "  all           show everything", "cls": "line-highlight" },
+  { "text": "  theme         change color theme", "cls": "line-highlight" },
+  { "text": "  clear         clear terminal", "cls": "line-highlight" },
+  { "text": "  help          this message", "cls": "line-highlight" },
+  { "text": "" },
+  { "text": "  tip: press &lt;Tab&gt; to autocomplete", "cls": "line-comment" },
+  { "text": "" }
+]

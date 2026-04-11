@@ -1,0 +1,70 @@
+{
+  "boot": [
+    { "text": "", "cls": "" },
+    { "text": "  SPACEDUCK BIOS v3.14.159", "cls": "line-system" },
+    { "text": "  (c) 2026 spaceduck.org", "cls": "line-system" },
+    { "text": "", "cls": "" },
+    { "text": "  CPU .......... OK", "cls": "line-system", "delay": 80 },
+    { "text": "  Memory ....... 640K ought to be enough", "cls": "line-system", "delay": 80 },
+    { "text": "  Disk ......... OK", "cls": "line-system", "delay": 80 },
+    { "text": "  Network ...... OK", "cls": "line-system", "delay": 80 },
+    { "text": "", "cls": "", "delay": 200 },
+    { "text": "  Loading profile...", "cls": "line-system", "delay": 300 },
+    { "text": "", "cls": "", "delay": 100 }
+  ],
+  "docker": [
+    { "id": "a1b2c3d4e5f6", "image": "nginx:alpine",     "status": "Up 2 hours",  "ports": "0.0.0.0:443->443/tcp",  "name": "web-frontend" },
+    { "id": "b2c3d4e5f6a7", "image": "node:20-slim",      "status": "Up 2 hours",  "ports": "3000/tcp",               "name": "api-server" },
+    { "id": "c3d4e5f6a7b8", "image": "postgres:16",        "status": "Up 3 hours",  "ports": "5432/tcp",               "name": "postgres-db" },
+    { "id": "d4e5f6a7b8c9", "image": "redis:7-alpine",    "status": "Up 3 hours",  "ports": "6379/tcp",               "name": "cache" },
+    { "id": "e5f6a7b8c9d0", "image": "prom/prometheus",   "status": "Up 5 hours",  "ports": "9090/tcp",               "name": "prometheus" },
+    { "id": "f6a7b8c9d0e1", "image": "grafana/grafana",   "status": "Up 5 hours",  "ports": "0.0.0.0:3001->3000/tcp", "name": "grafana" }
+  ],
+  "kubectl": [
+    { "name": "cassandra-node-0",        "ready": "1/1", "status": "Running",   "restarts": "0", "age": "14d" },
+    { "name": "cassandra-node-1",        "ready": "1/1", "status": "Running",   "restarts": "0", "age": "14d" },
+    { "name": "cassandra-node-2",        "ready": "1/1", "status": "Running",   "restarts": "1", "age": "14d" },
+    { "name": "cassandra-monitor-0",     "ready": "1/1", "status": "Running",   "restarts": "0", "age": "7d" },
+    { "name": "slackbot-7f8b9c-x4k2p",  "ready": "1/1", "status": "Running",   "restarts": "0", "age": "3d" },
+    { "name": "nginx-ingress-5d4c3-abc", "ready": "1/1", "status": "Running",   "restarts": "0", "age": "21d" },
+    { "name": "prometheus-0",            "ready": "1/1", "status": "Running",   "restarts": "0", "age": "10d" },
+    { "name": "grafana-6b7c8d-q9w2e",   "ready": "1/1", "status": "Running",   "restarts": "2", "age": "10d" },
+    { "name": "cqlsh-debug-pod",         "ready": "0/1", "status": "Completed", "restarts": "0", "age": "1d" }
+  ],
+  "gitlog": [
+    { "hash": "a3f8c21", "author": "Benjamin Nied", "date": "2026-04-10", "msg": "feat: add DOOM easter egg because why not" },
+    { "hash": "e7b2d44", "author": "Benjamin Nied", "date": "2026-04-10", "msg": "feat: add btop, cmatrix, neofetch commands" },
+    { "hash": "c1a9f63", "author": "Benjamin Nied", "date": "2026-04-10", "msg": "feat: color themes and tab completion" },
+    { "hash": "b5d3e87", "author": "Benjamin Nied", "date": "2026-04-10", "msg": "fix: cursor tracking next to typed characters" },
+    { "hash": "9f4a2c1", "author": "Benjamin Nied", "date": "2026-04-10", "msg": "feat: CRT power-on animation, phosphor glow" },
+    { "hash": "7e6d8b3", "author": "Benjamin Nied", "date": "2026-04-10", "msg": "feat: interactive terminal with resume data" },
+    { "hash": "1a2b3c4", "author": "Benjamin Nied", "date": "2026-04-10", "msg": "init: initial commit" }
+  ],
+  "neofetchInfo": [
+    { "label": "visitor", "value": "@bnied.dev", "cls": "line-heading" },
+    { "label": "", "value": "──────────────────", "cls": "line-separator" },
+    { "label": "OS", "value": "SPACEDUCK/Linux x86_64" },
+    { "label": "Host", "value": "bnied.dev" },
+    { "label": "Kernel", "value": "1.0.0-spaceduck" },
+    { "label": "Shell", "value": "bnied-sh 1.0" },
+    { "label": "Terminal", "value": "CRT Phosphor P1" },
+    { "label": "CPU", "value": "JavaScript V8 @ 60fps" },
+    { "label": "Memory", "value": "640K / 640K (100%)" },
+    { "label": "Disk", "value": "42K / unlimited" },
+    { "label": "Font", "value": "Fira Code 14px" }
+  ],
+  "btopProcesses": [
+    { "pid": 1,    "user": "root",     "cpu": 0.0, "mem": 0.3, "cmd": "systemd" },
+    { "pid": 42,   "user": "bnied",    "cpu": 0.0, "mem": 0.1, "cmd": "sshd: bnied@pts/0" },
+    { "pid": 137,  "user": "bnied",    "cpu": 0.0, "mem": 0.2, "cmd": "/bin/bash" },
+    { "pid": 314,  "user": "bnied",    "cpu": 0.0, "mem": 1.2, "cmd": "node server.js" },
+    { "pid": 420,  "user": "postgres", "cpu": 0.0, "mem": 3.8, "cmd": "postgres: writer" },
+    { "pid": 421,  "user": "postgres", "cpu": 0.0, "mem": 2.1, "cmd": "postgres: autovacuum" },
+    { "pid": 666,  "user": "root",     "cpu": 0.0, "mem": 0.5, "cmd": "[kworker/0:1-events]" },
+    { "pid": 777,  "user": "bnied",    "cpu": 0.0, "mem": 4.2, "cmd": "kubectl proxy" },
+    { "pid": 888,  "user": "bnied",    "cpu": 0.0, "mem": 1.8, "cmd": "python3 slackbot.py" },
+    { "pid": 999,  "user": "cassand",  "cpu": 0.0, "mem": 12.4, "cmd": "java -jar cassandra.jar" },
+    { "pid": 1024, "user": "bnied",    "cpu": 0.0, "mem": 0.8, "cmd": "vim runbook.md" },
+    { "pid": 1337, "user": "bnied",    "cpu": 0.0, "mem": 0.1, "cmd": "btop" }
+  ]
+}
