@@ -19,6 +19,7 @@
     { "text": "SEP", "cls": "line-separator" },
     { "text": "" },
     { "text": "  email     bnied@spaceduck.org", "cls": "line-accent" },
+    { "text": "  codeberg  <a href=\"https://codeberg.org/bnied\">codeberg.org/bnied</a>", "cls": "line-link" },
     { "text": "  github    <a href=\"https://github.com/bnied\">github.com/bnied</a>", "cls": "line-link" },
     { "text": "  linkedin  <a href=\"https://www.linkedin.com/in/bnied\">linkedin.com/in/bnied</a>", "cls": "line-link" },
     { "text": "" }
