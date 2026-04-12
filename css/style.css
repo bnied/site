@@ -4,6 +4,32 @@
    P1 green primary, P3 amber accents
    ═══════════════════════════════════════════════════════════ */
 
+/* ═══ Self-hosted Fira Code ════════════════════════════════ */
+
+@font-face {
+  font-family: 'Fira Code';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('../fonts/FiraCode-Light.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Fira Code';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/FiraCode-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Fira Code';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../fonts/FiraCode-Bold.woff2') format('woff2');
+}
+
 *, *::before, *::after {
   margin: 0;
   padding: 0;
