@@ -55,4 +55,6 @@ python3 -m http.server 8000
 
 ## License
 
-Content is personal. Code is MIT.
+GPL v2. See [LICENSE.txt](LICENSE.txt).
+
+`assets/doom.jsdos` contains DOOM shareware (freely distributable, id Software) and DOSBox (GPL v2). js-dos emulator (GPL v2) is loaded from CDN.
