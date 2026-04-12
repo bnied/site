@@ -55,6 +55,11 @@ python3 -m http.server 8000
 
 ## License
 
-GPL v2. See [LICENSE.txt](LICENSE.txt).
+Original site code is 2-clause BSD. See [LICENSE.txt](LICENSE.txt) for the full text and third-party attributions.
 
-`assets/doom.jsdos` contains DOOM shareware (freely distributable, id Software) and DOSBox (GPL v2). js-dos emulator (GPL v2) is loaded from CDN. [Fira Code](https://github.com/tonsky/FiraCode) font is licensed under the [SIL Open Font License 1.1](https://scripts.sil.org/OFL).
+### Third-party components
+
+- **[Fira Code](https://github.com/tonsky/FiraCode)** -- SIL Open Font License 1.1 (self-hosted in `fonts/`)
+- **[js-dos](https://js-dos.com/)** -- GPL v2 (loaded at runtime from CDN)
+- **[DOSBox](https://www.dosbox.com/)** -- GPL v2 (bundled inside `assets/doom.jsdos`)
+- **DOOM shareware WAD** -- freely distributable shareware, (c) 1993 id Software (bundled inside `assets/doom.jsdos`)
