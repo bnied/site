@@ -823,6 +823,8 @@
     jsdosCSS.href = "https://v8.js-dos.com/latest/js-dos.css";
     document.head.appendChild(jsdosCSS);
 
+    let dosInstance = null;
+
     const jsdosScript = document.createElement("script");
     jsdosScript.src = "https://v8.js-dos.com/latest/js-dos.js";
     jsdosScript.onload = () => {
@@ -830,7 +832,7 @@
       scrollToBottom();
 
       try {
-        const dos = Dos(doomContainer, {
+        dosInstance = Dos(doomContainer, {
           url: "assets/doom.jsdos",
           autoStart: true,
           noCloud: true,
@@ -879,8 +881,22 @@
 
     function cleanup() {
       document.removeEventListener("keydown", onEsc, true);
+      // Stop the js-dos emulator if it's running
+      if (dosInstance) {
+        try {
+          if (typeof dosInstance.stop === "function") {
+            dosInstance.stop();
+          } else if (typeof dosInstance.then === "function") {
+            dosInstance.then(d => d && d.stop && d.stop()).catch(() => {});
+          }
+        } catch (err) {
+          console.warn("Failed to stop DOS:", err);
+        }
+        dosInstance = null;
+      }
       doomOverlay.remove();
       jsdosCSS.remove();
+      jsdosScript.remove();
       addLine("", null, false);
       addLine("  Thanks for playing DOOM.", "line-ok", true);
       addLine("", null, false);
