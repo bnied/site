@@ -53,6 +53,19 @@
     { "label": "Disk", "value": "42K / unlimited" },
     { "label": "Font", "value": "Fira Code 14px" }
   ],
+  "catPictures": [
+    "img/cats/cat_2051.jpg",
+    "img/cats/cat_2052.jpg",
+    "img/cats/cat_2054.jpg",
+    "img/cats/cat_2058.jpg",
+    "img/cats/cat_2061.jpg",
+    "img/cats/cat_2063.jpg",
+    "img/cats/cat_2066.jpg",
+    "img/cats/cat_2067.jpg",
+    "img/cats/cat_2069.jpg",
+    "img/cats/cat_2070.jpg",
+    "img/cats/cat_2071.jpg"
+  ],
   "btopProcesses": [
     { "pid": 1,    "user": "root",     "cpu": 0.0, "mem": 0.3, "cmd": "systemd" },
     { "pid": 42,   "user": "bnied",    "cpu": 0.0, "mem": 0.1, "cmd": "sshd: bnied@pts/0" },

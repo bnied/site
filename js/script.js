@@ -250,6 +250,8 @@
       const sectionName = file.replace(/\.txt$/, "");
       if (file === "") {
         addLine("  cat: missing operand", "line-highlight", true);
+      } else if (file === "pictures" || file === "picture") {
+        showCatPicture();
       } else if (sections[sectionName]) {
         addLines(sections[sectionName]);
       } else if (file === ".secrets") {
@@ -1154,6 +1156,27 @@
   }
 
   // ── cowsay ────────────────────────────────────────────
+
+  // ── cat pictures ─────────────────────────────────────
+
+  function showCatPicture() {
+    const pictures = DATA.catPictures || [];
+    if (pictures.length === 0) {
+      addLine("  cat: no pictures available", "line-highlight", true);
+      return;
+    }
+    const src = pictures[Math.floor(Math.random() * pictures.length)];
+
+    const container = document.createElement("div");
+    container.className = "line cat-picture";
+    container.innerHTML = `<img src="${src}" alt="a cat" class="cat-img" loading="lazy">`;
+    output.appendChild(container);
+    scrollToBottom();
+
+    // Re-scroll after image loads to account for its height
+    const img = container.querySelector("img");
+    img.addEventListener("load", scrollToBottom);
+  }
 
   function runCowsay(message) {
     const msg = message || "moo";

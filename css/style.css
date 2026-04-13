@@ -545,6 +545,24 @@ html, body {
   user-select: none;
 }
 
+/* ═══ cat pictures ═════════════════════════════════════════ */
+
+.cat-picture {
+  margin: 0.6em 0;
+  padding-left: 2ch;
+}
+
+.cat-img {
+  max-width: 480px;
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--p1-faint);
+  box-shadow: 0 0 12px var(--p1-bloom), 0 0 2px var(--p1-glow);
+  filter: saturate(0.9) contrast(1.02);
+  border-radius: 2px;
+}
+
 /* ═══ DOOM ═════════════════════════════════════════════════ */
 
 #doom-container {
