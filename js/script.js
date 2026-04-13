@@ -159,6 +159,10 @@
   function boot() {
     const POST_DELAY = 1600; // wait for CRT power-on
 
+    // Hide the prompt during the boot sequence
+    const inputLine = document.getElementById("input-line");
+    if (inputLine) inputLine.style.display = "none";
+
     const biosLines = DATA.boot || [];
 
     const profileLines = [];
@@ -180,8 +184,12 @@
 
     function scheduleNext() {
       if (i >= allBootLines.length) {
-        scrollToBottom();
-        cmdInput.focus();
+        // After all boot lines have rendered, reveal the prompt
+        setTimeout(() => {
+          if (inputLine) inputLine.style.display = "flex";
+          scrollToBottom();
+          cmdInput.focus();
+        }, cumulativeDelay + 150);
         return;
       }
       const line = allBootLines[i];
