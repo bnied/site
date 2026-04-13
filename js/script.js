@@ -346,23 +346,8 @@
       const upStr = (hrs > 0 ? hrs + " hr " : "") + mins + " min, " + secs + " sec";
       addLine(`  ${timeStr} up ${upStr}, 1 user, load average: 0.42, 0.69, 1.337`, null, true);
       addLine("", null, false);
-    } else if (cmd === "ls" || cmd === "ls -la" || cmd === "ls -l" || cmd === "ls -a") {
-      if (cmd.includes("-l")) {
-        addLine("  total 42", "line-comment", true);
-        addLine("  drwxr-xr-x  2 bnied  staff  4096 Apr 10  2026 .", null, true);
-        addLine("  drwxr-xr-x  3 bnied  staff  4096 Apr 10  2026 ..", null, true);
-        addLine("  -rw-r--r--  1 bnied  staff  1337 Apr 10  2026 about.txt", "line-accent", true);
-        addLine("  -rw-r--r--  1 bnied  staff  2048 Apr 10  2026 contact.txt", "line-accent", true);
-        addLine("  -rw-r--r--  1 bnied  staff  4096 Apr 10  2026 experience.txt", "line-accent", true);
-        addLine("  -rw-r--r--  1 bnied  staff  3072 Apr 10  2026 skills.txt", "line-accent", true);
-        addLine("  -rw-r--r--  1 bnied  staff  2560 Apr 10  2026 projects.txt", "line-accent", true);
-        addLine("  -rw-r--r--  1 bnied  staff   512 Apr 10  2026 education.txt", "line-accent", true);
-        addLine("  -rwx------  1 bnied  staff     0 Apr 10  2026 .secrets", "line-comment", true);
-      } else {
-        addLine("  about.txt   contact.txt    experience.txt", "line-accent", true);
-        addLine("  skills.txt  projects.txt   education.txt", "line-accent", true);
-      }
-      addLine("", null, false);
+    } else if (cmd === "ls" || /^ls\s+-[lashFrt1]+$/.test(cmd) || /^ls\s+(-[lashFrt1]+\s+)+-[lashFrt1]+$/.test(cmd)) {
+      runLs(cmd);
     } else if (cmd.startsWith("cd ")) {
       const dir = cmd.slice(3).trim();
       if (dir === "~" || dir === "/home/visitor" || dir === ".") {
@@ -662,6 +647,102 @@
   }
 
   // ── docker ps ────────────────────────────────────────
+
+  // ── ls ───────────────────────────────────────────────
+
+  function runLs(cmd) {
+    // Parse flags from the command (e.g. "ls -lash" -> "lash")
+    const parts = cmd.slice(2).trim();
+    const flagStr = parts.replace(/[\s-]/g, "");
+    const flags = new Set(flagStr);
+
+    const showHidden = flags.has("a");
+    const longFormat = flags.has("l");
+    const showSize   = flags.has("s");
+    const humanSize  = flags.has("h");
+    const onePerLine = flags.has("1");
+    const reverse    = flags.has("r");
+    const byTime     = flags.has("t");
+    const classify   = flags.has("F");
+
+    // File listing
+    let files = [
+      { name: "about.txt",       size: 1337, mtime: "Apr 10  2026", kind: "file" },
+      { name: "contact.txt",     size: 2048, mtime: "Apr 10  2026", kind: "file" },
+      { name: "experience.txt",  size: 4096, mtime: "Apr 13  2026", kind: "file" },
+      { name: "skills.txt",      size: 3072, mtime: "Apr 10  2026", kind: "file" },
+      { name: "projects.txt",    size: 2560, mtime: "Apr 13  2026", kind: "file" },
+      { name: "education.txt",   size:  512, mtime: "Apr 10  2026", kind: "file" },
+    ];
+
+    const hidden = [
+      { name: ".",               size: 4096, mtime: "Apr 13  2026", kind: "dir" },
+      { name: "..",              size: 4096, mtime: "Apr 10  2026", kind: "dir" },
+      { name: ".secrets",        size:    0, mtime: "Apr 10  2026", kind: "file", perms: "-rwx------" },
+      { name: ".bash_history",   size:  666, mtime: "Apr 13  2026", kind: "file" },
+    ];
+
+    if (showHidden) files = [...hidden, ...files];
+    if (byTime) {
+      // Rough fake: experience/projects are "newest"
+      files.sort((a, b) => b.mtime.localeCompare(a.mtime));
+    }
+    if (reverse) files.reverse();
+
+    function fmtSize(n) {
+      if (!humanSize) return String(n);
+      if (n < 1024) return n + "B";
+      if (n < 1024 * 1024) return (n / 1024).toFixed(1) + "K";
+      return (n / 1024 / 1024).toFixed(1) + "M";
+    }
+
+    function blocks(n) {
+      // POSIX block size of 1024 (ls -s / -k)
+      return Math.max(1, Math.ceil(n / 1024));
+    }
+
+    function classifyName(f) {
+      if (!classify) return f.name;
+      if (f.kind === "dir") return f.name + "/";
+      return f.name;
+    }
+
+    if (longFormat) {
+      const totalBlocks = files.reduce((acc, f) => acc + blocks(f.size), 0);
+      addLine(`  total ${totalBlocks}`, "line-comment", true);
+
+      // Determine column widths
+      const sizeStrs = files.map(f => fmtSize(f.size));
+      const maxSizeW = Math.max(...sizeStrs.map(s => s.length));
+      const blockStrs = files.map(f => String(blocks(f.size)));
+      const maxBlockW = Math.max(...blockStrs.map(s => s.length));
+
+      files.forEach((f, idx) => {
+        const perms = f.perms || (f.kind === "dir" ? "drwxr-xr-x" : "-rw-r--r--");
+        const links = f.kind === "dir" ? "2" : "1";
+        const size = sizeStrs[idx].padStart(maxSizeW);
+        const blockStr = showSize ? blockStrs[idx].padStart(maxBlockW) + " " : "";
+        const name = classifyName(f);
+        const cls = f.name.startsWith(".") ? "line-comment" : (f.kind === "dir" ? "line-highlight" : "line-accent");
+        addLine(`  ${blockStr}${perms}  ${links} bnied  staff  ${size} ${f.mtime} ${name}`, cls, true);
+      });
+    } else if (onePerLine) {
+      files.forEach(f => {
+        const cls = f.name.startsWith(".") ? "line-comment" : (f.kind === "dir" ? "line-highlight" : "line-accent");
+        addLine("  " + classifyName(f), cls, true);
+      });
+    } else {
+      // Default compact 3-column layout
+      const names = files.map(classifyName);
+      const colW = Math.max(...names.map(n => n.length)) + 3;
+      const cols = 3;
+      for (let i = 0; i < names.length; i += cols) {
+        const row = names.slice(i, i + cols).map(n => n.padEnd(colW)).join("");
+        addLine("  " + row.trimEnd(), "line-accent", true);
+      }
+    }
+    addLine("", null, false);
+  }
 
   function runDockerPs() {
     const containers = DATA.docker || [];
