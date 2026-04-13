@@ -1169,7 +1169,7 @@
 
     const container = document.createElement("div");
     container.className = "line cat-picture";
-    container.innerHTML = `<img src="${src}" alt="a cat" class="cat-img" loading="lazy">`;
+    container.innerHTML = `<div class="cat-frame"><img src="${src}" alt="a cat" class="cat-img" loading="lazy"></div>`;
     output.appendChild(container);
     scrollToBottom();
 

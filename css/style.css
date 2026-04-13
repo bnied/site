@@ -552,15 +552,33 @@ html, body {
   padding-left: 2ch;
 }
 
-.cat-img {
+.cat-frame {
+  position: relative;
+  display: inline-block;
   max-width: 480px;
+  width: 100%;
+  border: 1px solid var(--p1-faint);
+  box-shadow: 0 0 12px var(--p1-bloom), 0 0 2px var(--p1-glow);
+  border-radius: 2px;
+  overflow: hidden;
+  background: #000;
+}
+
+.cat-img {
   width: 100%;
   height: auto;
   display: block;
-  border: 1px solid var(--p1-faint);
-  box-shadow: 0 0 12px var(--p1-bloom), 0 0 2px var(--p1-glow);
-  filter: saturate(0.9) contrast(1.02);
-  border-radius: 2px;
+  filter: grayscale(100%) brightness(0.85) contrast(1.15);
+}
+
+/* Phosphor tint overlay -- picks up the current theme color */
+.cat-frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--p1);
+  mix-blend-mode: multiply;
+  pointer-events: none;
 }
 
 /* ═══ DOOM ═════════════════════════════════════════════════ */
