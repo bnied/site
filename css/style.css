@@ -568,7 +568,7 @@ html, body {
   width: 100%;
   height: auto;
   display: block;
-  filter: grayscale(100%) brightness(0.85) contrast(1.15);
+  filter: grayscale(100%) brightness(1.4) contrast(1.05);
 }
 
 /* Phosphor tint overlay -- picks up the current theme color */
