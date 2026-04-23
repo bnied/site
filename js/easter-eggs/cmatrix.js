@@ -9,6 +9,9 @@ export function runCmatrix() {
   inputLine.style.display = "none";
   const savedOutput = output.innerHTML;
   output.innerHTML = "";
+  // #output has auto height, so canvas height:100% would resolve to the
+  // browser's default 150px. Fill the terminal for the duration of cmatrix.
+  output.style.height = "100%";
 
   const matrixEl = document.createElement("canvas");
   matrixEl.style.cssText = "width:100%;height:100%;display:block;";
@@ -55,6 +58,7 @@ export function runCmatrix() {
       clearInterval(interval);
       window.removeEventListener("resize", resize);
       document.removeEventListener("keydown", onKey, true);
+      output.style.height = "";
       output.innerHTML = savedOutput;
       inputLine.style.display = "flex";
       cmdInput.focus();
