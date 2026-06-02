@@ -54,3 +54,15 @@ test("an empty stage returns a syntax error", () => {
   const r = runPipeline("echo hi |", ctx);
   assert.ok(r.error.includes("syntax error"));
 });
+
+test("figlet args override piped input", () => {
+  // 'yo' should win over the piped 'hi', producing the figlet of YO
+  const r = runPipeline("echo hi | figlet yo", ctx);
+  assert.deepEqual(r.lines, runPipeline("figlet yo", ctx).lines);
+});
+
+test("echo as a filter passes input through and ignores its own args", () => {
+  // echo ignores stdin in real shells; here as a filter it returns input unchanged
+  const r = runPipeline("echo hi | echo bye", ctx);
+  assert.deepEqual(r.lines, ["hi"]);
+});

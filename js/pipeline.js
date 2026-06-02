@@ -28,10 +28,12 @@ const PIPEABLE = {
     return section.map(l => l.text);
   },
   figlet(input, args, ctx) {
+    // explicit args override piped input (mirrors real CLI tools)
     const text = args.length ? args : (input ? input.join(" ") : "");
     return figletText(text, ctx.font);
   },
   cowsay(input, args) {
+    // explicit args override piped input (mirrors real CLI tools)
     const msg = args.length ? args : (input ? input.join("\n") : "moo");
     return cowsayText(msg);
   },
