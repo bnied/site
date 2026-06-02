@@ -11,6 +11,7 @@ import {
 } from "./easter-eggs/index.js";
 import { hasPipe, runPipeline } from "./pipeline.js";
 import { figletText } from "./figlet.js";
+import { unameText, whoamiText, pwdText, hostnameText, dateText, uptimeText } from "./textsources.js";
 
 const LOLCAT_COL_STEP = 12;
 const LOLCAT_ROW_STEP = 20;
@@ -55,6 +56,13 @@ function renderPipelineResult(result) {
       addLine("  " + escapeHTML(line), null, true);
     }
   });
+  addLine("", null, false);
+}
+
+// Render plain-text command output (2-space indent, default color), matching
+// the legacy inline system-command branches.
+function renderPlain(lines) {
+  lines.forEach(l => addLine("  " + l, null, true));
   addLine("", null, false);
 }
 
@@ -143,18 +151,8 @@ export function runCommand(raw) {
     addLine("", null, false);
   } else if (cmd === "echo") {
     addLine("", null, false);
-  } else if (cmd === "uname" || cmd === "uname -a") {
-    addLine("  bnied.dev 1.0.0 SPACEDUCK-BIOS SMP " + new Date().toUTCString() + " JavaScript/ES2024 browser", null, true);
-    addLine("", null, false);
-  } else if (cmd === "uname -s") {
-    addLine("  bnied.dev", null, true);
-    addLine("", null, false);
-  } else if (cmd === "uname -r") {
-    addLine("  1.0.0", null, true);
-    addLine("", null, false);
-  } else if (cmd === "uname -m") {
-    addLine("  JavaScript/ES2024", null, true);
-    addLine("", null, false);
+  } else if (cmd === "uname" || cmd === "uname -a" || cmd === "uname -s" || cmd === "uname -r" || cmd === "uname -m") {
+    renderPlain(unameText(cmd.slice(5).trim(), new Date()));
   } else if (cmd.startsWith("theme ")) {
     const themeName = cmd.slice(6).trim();
     if (state.THEME_NAMES.includes(themeName)) {
@@ -177,26 +175,15 @@ export function runCommand(raw) {
     addLine("  usage: theme &lt;name&gt;", "line-comment", true);
     addLine("", null, false);
   } else if (cmd === "whoami") {
-    addLine("  visitor", null, true);
-    addLine("", null, false);
+    renderPlain(whoamiText());
   } else if (cmd === "pwd") {
-    addLine("  /home/visitor", null, true);
-    addLine("", null, false);
+    renderPlain(pwdText());
   } else if (cmd === "hostname" || cmd === "hostname -f") {
-    addLine("  bnied.dev", null, true);
-    addLine("", null, false);
+    renderPlain(hostnameText());
   } else if (cmd === "date") {
-    addLine("  " + new Date().toString(), null, true);
-    addLine("", null, false);
+    renderPlain(dateText(new Date()));
   } else if (cmd === "uptime") {
-    const elapsed = Math.floor((Date.now() - state.pageLoadTime) / 1000);
-    const hrs = Math.floor(elapsed / 3600);
-    const mins = Math.floor((elapsed % 3600) / 60);
-    const secs = elapsed % 60;
-    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const upStr = (hrs > 0 ? hrs + " hr " : "") + mins + " min, " + secs + " sec";
-    addLine(`  ${timeStr} up ${upStr}, 1 user, load average: 0.42, 0.69, 1.337`, null, true);
-    addLine("", null, false);
+    renderPlain(uptimeText(new Date(), state.pageLoadTime));
   } else if (cmd === "ls" || /^ls\s+-[lashFrt1]+$/.test(cmd) || /^ls\s+(-[lashFrt1]+\s+)+-[lashFrt1]+$/.test(cmd)) {
     runLs(cmd);
   } else if (cmd.startsWith("cd ")) {
