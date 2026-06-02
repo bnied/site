@@ -657,11 +657,14 @@ html[data-crt="off"] .line,
 html[data-crt="off"] .line-accent,
 html[data-crt="off"] .line-heading,
 html[data-crt="off"] .line-ok,
+html[data-crt="off"] .line-link a,
+html[data-crt="off"] .line-link a:hover,
 html[data-crt="off"] .ascii-art,
 html[data-crt="off"] .prompt,
 html[data-crt="off"] .prompt-path,
 html[data-crt="off"] #cmd-input { text-shadow: none; }
-html[data-crt="off"] .cursor { box-shadow: none; }
+html[data-crt="off"] .cursor,
+html[data-crt="off"] .cat-frame { box-shadow: none; }
 html[data-crt="off"] .line-enter { animation: none; }
 
 /* ── MAX: edge aberration + sync-roll + a touch more bloom ── */
