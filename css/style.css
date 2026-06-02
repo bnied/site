@@ -656,6 +656,7 @@ html[data-crt="off"] #screen::after { display: none; }
 html[data-crt="off"] .line,
 html[data-crt="off"] .line-accent,
 html[data-crt="off"] .line-heading,
+html[data-crt="off"] .line-highlight,
 html[data-crt="off"] .line-ok,
 html[data-crt="off"] .line-link a,
 html[data-crt="off"] .line-link a:hover,
@@ -693,4 +694,5 @@ html[data-crt="max"] #screen { animation: flicker 8s infinite, syncRoll 24s ease
   #scanlines,
   #scanlines::after { animation: none; }
   .line-enter { animation: none; }
+  .cursor { animation: none; }
 }
