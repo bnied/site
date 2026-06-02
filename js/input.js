@@ -1,7 +1,7 @@
 // Keyboard and input handling: cursor sync, tab completion (with ghost text),
 // history navigation, Ctrl+L to clear, click-to-focus.
 
-import { cmdInput, inputSizer, output } from "./dom.js";
+import { cmdInput, inputSizer, cursor, output } from "./dom.js";
 import { state } from "./state.js";
 import { ghostSuggestion, completeInput } from "./completion.js";
 
@@ -9,6 +9,10 @@ let historyIdx = -1;
 
 function syncCursor() {
   inputSizer.textContent = cmdInput.value || "";
+  // The cursor is absolutely positioned; place it at the end of the typed
+  // text (= the hidden sizer's width) so it overlays the start of any ghost
+  // suggestion rather than sitting in the layout flow between them.
+  cursor.style.left = inputSizer.offsetWidth + "px";
 }
 
 function showTabGhost() {
@@ -20,9 +24,10 @@ function showTabGhost() {
     const ghost = document.createElement("span");
     ghost.id = "tab-ghost";
     ghost.textContent = suggestion;
-    // Place the suggestion AFTER the cursor so the cursor stays at the end of
-    // the typed text (fish-style autosuggest), not at the end of the suggestion.
-    document.getElementById("cursor").after(ghost);
+    // Sits in normal flow right after the (hidden) sizer, so it's contiguous
+    // with the typed text. The absolutely-positioned cursor overlays the
+    // boundary (the first ghost char), fish-style — no gap.
+    inputSizer.insertAdjacentElement("afterend", ghost);
   }
 }
 
@@ -81,4 +86,6 @@ export function initInput(runCommand) {
   });
 
   document.addEventListener("click", () => cmdInput.focus());
+
+  syncCursor();
 }

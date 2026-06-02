@@ -522,14 +522,15 @@ html, body {
 }
 
 .cursor {
-  display: inline-block;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
   width: 0.6em;
   height: 1.15em;
   background: var(--p1);
   box-shadow: 0 0 6px var(--p1-glow), 0 0 15px var(--p1-bloom);
   animation: cursorBlink 1s step-end infinite;
-  vertical-align: text-bottom;
-  flex-shrink: 0;
 }
 
 @keyframes cursorBlink {
