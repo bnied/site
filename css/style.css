@@ -409,6 +409,9 @@ html, body {
 
 .line-prompt {
   color: var(--text);
+  /* Match #input-line's top margin so the echoed command lands exactly where
+     the live input prompt was — no vertical jump on submit. */
+  margin-top: 0.4em;
 }
 
 .line-system {
