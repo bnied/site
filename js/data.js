@@ -43,6 +43,12 @@ export async function loadData() {
   state.COMMANDS = [
     "about", "skills", "experience", "projects", "education", "contact",
     "all", "clear", "help", "theme", "figlet", "lolcat",
+    "cat", "echo", "fortune", "cowsay", "neofetch", "ls", "uname", "whoami",
+    "pwd", "hostname", "date", "uptime", "history", "doom", "btop", "top",
+    "htop", "sl", "cmatrix", "traceroute", "ping", "grep", "man", "ssh",
+    "curl", "make", "wget", "reboot", "shutdown", "poweroff", "halt", "exit",
+    "logout", "vim", "vi", "emacs", "nano", "sudo", "cd", "rm", "docker",
+    "kubectl", "git", "alias",
     ...state.EXP_KEYS.map(k => "experience " + k),
     ...state.THEME_NAMES.map(t => "theme " + t),
   ];

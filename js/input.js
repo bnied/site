@@ -3,6 +3,7 @@
 
 import { cmdInput, inputSizer, output } from "./dom.js";
 import { state } from "./state.js";
+import { ghostSuggestion, completeInput } from "./completion.js";
 
 let historyIdx = -1;
 
@@ -10,23 +11,15 @@ function syncCursor() {
   inputSizer.textContent = cmdInput.value || "";
 }
 
-function getCompletion(partial) {
-  if (!partial) return null;
-  const lower = partial.toLowerCase();
-  const matches = state.COMMANDS.filter(c => c.startsWith(lower));
-  return matches.length === 1 ? matches[0] : null;
-}
-
 function showTabGhost() {
   const existing = document.getElementById("tab-ghost");
   if (existing) existing.remove();
 
-  const val = cmdInput.value;
-  const match = getCompletion(val);
-  if (match && val.length > 0 && match !== val.toLowerCase()) {
+  const suggestion = ghostSuggestion(cmdInput.value, state.COMMANDS);
+  if (suggestion) {
     const ghost = document.createElement("span");
     ghost.id = "tab-ghost";
-    ghost.textContent = match.slice(val.length);
+    ghost.textContent = suggestion;
     // Place the suggestion AFTER the cursor so the cursor stays at the end of
     // the typed text (fish-style autosuggest), not at the end of the suggestion.
     document.getElementById("cursor").after(ghost);
@@ -55,11 +48,12 @@ export function initInput(runCommand) {
       clearTabGhost();
     } else if (e.key === "Tab") {
       e.preventDefault();
-      const match = getCompletion(cmdInput.value);
-      if (match) {
-        cmdInput.value = match;
+      const completed = completeInput(cmdInput.value, state.COMMANDS);
+      if (completed !== null) {
+        cmdInput.value = completed;
         syncCursor();
         clearTabGhost();
+        showTabGhost();
       }
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
