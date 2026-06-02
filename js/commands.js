@@ -11,6 +11,7 @@ import {
 } from "./easter-eggs/index.js";
 import { hasPipe, runPipeline } from "./pipeline.js";
 import { figletText } from "./figlet.js";
+import { CRT_LEVELS, crtLevelFromArg, getCrt, setCrt } from "./crt.js";
 import { unameText, whoamiText, pwdText, hostnameText, dateText, uptimeText } from "./textsources.js";
 
 const LOLCAT_COL_STEP = 12;
@@ -336,6 +337,22 @@ export function runCommand(raw) {
     addLine("", null, false);
   } else if (cmd.startsWith("lolcat ")) {
     renderPipelineResult({ lines: [raw.trim().slice(7)], colorize: true });
+  } else if (cmd === "crt") {
+    addLine(`  crt: ${getCrt()}`, "line-ok", true);
+    addLine("  available: " + CRT_LEVELS.join(", "), "line-comment", true);
+    addLine("  usage: crt &lt;level&gt;", "line-comment", true);
+    addLine("", null, false);
+  } else if (cmd.startsWith("crt ")) {
+    const arg = cmd.slice(4).trim();
+    const level = crtLevelFromArg(arg);
+    if (level) {
+      setCrt(level);
+      addLine(`  crt set to '${escapeHTML(level)}'`, "line-ok", true);
+    } else {
+      addLine(`  unknown crt level: ${escapeHTML(arg)}`, "line-highlight", true);
+      addLine("  available: " + CRT_LEVELS.join(", "), "line-comment", true);
+    }
+    addLine("", null, false);
   } else if (state.sections[cmd]) {
     addLines(state.sections[cmd]);
   } else {

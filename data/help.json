@@ -15,6 +15,7 @@
   { "text": "  lolcat        rainbow-ify output", "cls": "line-highlight" },
   { "text": "  all           show everything", "cls": "line-highlight" },
   { "text": "  theme         change color theme", "cls": "line-highlight" },
+  { "text": "  crt           CRT effects: off / on / max", "cls": "line-highlight" },
   { "text": "  clear         clear terminal", "cls": "line-highlight" },
   { "text": "  help          this message", "cls": "line-highlight" },
   { "text": "" },

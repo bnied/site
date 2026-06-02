@@ -42,7 +42,7 @@ export async function loadData() {
   state.EXP_KEYS = Object.keys(state.experienceDetail);
   state.COMMANDS = [
     "about", "skills", "experience", "projects", "education", "contact",
-    "all", "clear", "help", "theme", "figlet", "lolcat",
+    "all", "clear", "help", "theme", "crt", "figlet", "lolcat",
     "cat", "echo", "fortune", "cowsay", "neofetch", "ls", "uname", "whoami",
     "pwd", "hostname", "date", "uptime", "history", "doom", "btop", "top",
     "htop", "sl", "cmatrix", "traceroute", "ping", "grep", "man", "ssh",
