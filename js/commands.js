@@ -16,7 +16,17 @@ const LOLCAT_COL_STEP = 12;
 const LOLCAT_ROW_STEP = 20;
 
 function pipelineCtx() {
-  return { font: state.DATA.figletFont, fortunes: state.FORTUNES, sections: state.sections };
+  return {
+    font: state.DATA.figletFont,
+    fortunes: state.FORTUNES,
+    sections: state.sections,
+    now: new Date(),
+    pageLoadTime: state.pageLoadTime,
+    theme: document.documentElement.getAttribute("data-theme") || "green",
+    locale: navigator.language || "en-US",
+    neofetchAscii: state.DATA.neofetch || [],
+    neofetchInfo: state.DATA.neofetchInfo || [],
+  };
 }
 
 // Wrap each non-space character of a RAW (un-escaped) line in a rainbow span.

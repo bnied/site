@@ -31,9 +31,10 @@ fortune | cowsay
 figlet bnied | lolcat
 echo hello | figlet | lolcat
 cat about | cowsay
+neofetch | lolcat
 ```
 
-Pipeable commands: `echo`, `fortune`, `cat <section>`, `figlet`, `cowsay`, `lolcat`.
+Pipeable commands: `echo`, `fortune`, `cat <section>`, `figlet`, `cowsay`, `lolcat`, `neofetch`, `ls`, `uname`, `whoami`, `pwd`, `hostname`, `date`, `uptime`.
 
 ## Tech Stack
 

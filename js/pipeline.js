@@ -5,6 +5,9 @@
 
 import { figletText } from "./figlet.js";
 import { cowsayText } from "./cowsay.js";
+import {
+  unameText, whoamiText, pwdText, hostnameText, dateText, uptimeText, lsText, neofetchText,
+} from "./textsources.js";
 
 export function hasPipe(raw) {
   return raw.includes("|");
@@ -39,6 +42,30 @@ const PIPEABLE = {
   },
   lolcat(input, args) {
     return input ?? (args ? [args] : []);
+  },
+  uname(input, args, ctx) {
+    return unameText(args, ctx.now);
+  },
+  whoami() {
+    return whoamiText();
+  },
+  pwd() {
+    return pwdText();
+  },
+  hostname() {
+    return hostnameText();
+  },
+  date(input, args, ctx) {
+    return dateText(ctx.now);
+  },
+  uptime(input, args, ctx) {
+    return uptimeText(ctx.now, ctx.pageLoadTime);
+  },
+  ls(input, args) {
+    return lsText(args);
+  },
+  neofetch(input, args, ctx) {
+    return neofetchText(ctx);
   },
 };
 
