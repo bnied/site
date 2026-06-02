@@ -27,7 +27,9 @@ function showTabGhost() {
     const ghost = document.createElement("span");
     ghost.id = "tab-ghost";
     ghost.textContent = match.slice(val.length);
-    inputSizer.parentNode.insertBefore(ghost, document.getElementById("cursor"));
+    // Place the suggestion AFTER the cursor so the cursor stays at the end of
+    // the typed text (fish-style autosuggest), not at the end of the suggestion.
+    document.getElementById("cursor").after(ghost);
   }
 }
 
