@@ -69,7 +69,6 @@ function renderPlain(lines) {
 export function runCommand(raw) {
   const cmd = raw.trim().toLowerCase();
 
-  addLine("", null, false);
   const promptHTML = document.querySelector("#input-line .prompt").innerHTML;
   addLine(`<span class="prompt">${promptHTML}</span>${escapeHTML(raw)}`, "line-prompt", false);
 
