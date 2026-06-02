@@ -9,6 +9,7 @@
   <link rel="icon" href="img/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="icon" href="img/favicon-16.png" type="image/png" sizes="16x16">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <script>try{document.documentElement.dataset.crt=localStorage.getItem('crt')||'on';}catch(e){document.documentElement.dataset.crt='on';}</script>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -21,6 +22,8 @@
       <canvas id="noise" aria-hidden="true"></canvas>
       <!-- Scanline overlay -->
       <div id="scanlines" aria-hidden="true"></div>
+      <!-- Glass glare / edge effects overlay -->
+      <div id="glass" aria-hidden="true"></div>
 
       <div id="terminal">
         <div id="output"></div>
