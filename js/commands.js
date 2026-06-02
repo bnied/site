@@ -9,6 +9,44 @@ import {
   runBtop, runDoom, runLs, runShutdown, runSL, runCmatrix, runTraceroute, runPing,
   runNeofetch, runGrep, runDockerPs, runKubectlPods, runGitLog, showCatPicture, runCowsay,
 } from "./easter-eggs/index.js";
+import { hasPipe, runPipeline } from "./pipeline.js";
+import { figletText } from "./figlet.js";
+
+const LOLCAT_COL_STEP = 12;
+const LOLCAT_ROW_STEP = 20;
+
+function pipelineCtx() {
+  return { font: state.DATA.figletFont, fortunes: state.FORTUNES, sections: state.sections };
+}
+
+// Wrap each non-space character of a RAW (un-escaped) line in a rainbow span.
+function rainbowLine(text, rowIdx, start) {
+  let html = "";
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === " ") { html += " "; continue; }
+    const hue = Math.round((start + i * LOLCAT_COL_STEP + rowIdx * LOLCAT_ROW_STEP) % 360);
+    html += `<span style="color:hsl(${hue},100%,70%)">${escapeHTML(ch)}</span>`;
+  }
+  return html;
+}
+
+function renderPipelineResult(result) {
+  if (result.error) {
+    addLine("  " + escapeHTML(result.error), "line-highlight", true);
+    addLine("", null, false);
+    return;
+  }
+  const start = Math.floor(Math.random() * 360);
+  result.lines.forEach((line, i) => {
+    if (result.colorize) {
+      addLine("  " + rainbowLine(line, i, start), null, true);
+    } else {
+      addLine("  " + escapeHTML(line), null, true);
+    }
+  });
+  addLine("", null, false);
+}
 
 export function runCommand(raw) {
   const cmd = raw.trim().toLowerCase();
@@ -18,6 +56,12 @@ export function runCommand(raw) {
   addLine(`<span class="prompt">${promptHTML}</span>${escapeHTML(raw)}`, "line-prompt", false);
 
   if (cmd === "") {
+    scrollToBottom();
+    return;
+  }
+
+  if (hasPipe(raw)) {
+    renderPipelineResult(runPipeline(raw, pipelineCtx()));
     scrollToBottom();
     return;
   }
@@ -286,6 +330,16 @@ export function runCommand(raw) {
   } else if (cmd === "traceroute" || cmd === "tracert") {
     addLine("  Usage: traceroute &lt;host&gt;", "line-highlight", true);
     addLine("", null, false);
+  } else if (cmd === "figlet") {
+    addLine("  usage: figlet &lt;text&gt;", "line-comment", true);
+    addLine("", null, false);
+  } else if (cmd.startsWith("figlet ")) {
+    renderPipelineResult({ lines: figletText(raw.trim().slice(7), state.DATA.figletFont), colorize: false });
+  } else if (cmd === "lolcat") {
+    addLine("  usage: lolcat &lt;text&gt;  (or pipe into it, e.g. fortune | lolcat)", "line-comment", true);
+    addLine("", null, false);
+  } else if (cmd.startsWith("lolcat ")) {
+    renderPipelineResult({ lines: [raw.trim().slice(7)], colorize: true });
   } else if (state.sections[cmd]) {
     addLines(state.sections[cmd]);
   } else {
