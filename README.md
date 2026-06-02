@@ -40,7 +40,7 @@ Pipeable commands: `echo`, `fortune`, `cat <section>`, `figlet`, `cowsay`, `lolc
 - Vanilla HTML, CSS, JavaScript -- no frameworks, no build step
 - [Fira Code](https://github.com/tonsky/FiraCode) font
 - [js-dos](https://js-dos.com/) for DOOM (loaded on demand)
-- Content stored in `data/*.json`, logic in `js/script.js`
+- Content stored in `data/*.json`, logic split across ES modules in `js/`
 
 ## Structure
 
@@ -48,7 +48,12 @@ Pipeable commands: `echo`, `fortune`, `cat <section>`, `figlet`, `cowsay`, `lolc
 .
 ├── index.html
 ├── css/style.css
-├── js/script.js
+├── js/
+│   ├── main.js              # entry point
+│   ├── commands.js          # command dispatch
+│   ├── pipeline.js          # pipe engine
+│   ├── data.js              # loads JSON assets
+│   └── easter-eggs/         # easter-egg handlers
 ├── data/
 │   ├── sections.json        # resume sections
 │   ├── experience.json      # per-role details
