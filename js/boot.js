@@ -3,9 +3,24 @@
 // (regression guard for commit 544eba0).
 
 import { addLine, scrollToBottom } from "./render.js";
-import { cmdInput } from "./dom.js";
+import { cmdInput, output } from "./dom.js";
 import { state } from "./state.js";
-import { SEP } from "./data.js";
+import { buildBootLines } from "./bootlines.js";
+
+// Render a POST-style count-up line: the number races to its target then locks.
+function renderCountup(line, reduceMotion) {
+  addLine(line.label + line.target + line.unit, line.cls, false);
+  if (reduceMotion) return;
+  const el = output.lastElementChild;
+  const steps = 14;
+  let n = 0;
+  const tick = setInterval(() => {
+    n++;
+    const val = Math.round((line.target / steps) * n);
+    el.textContent = line.label + (n >= steps ? line.target : val) + line.unit;
+    if (n >= steps) clearInterval(tick);
+  }, 28);
+}
 
 export function boot() {
   const POST_DELAY = 1600; // wait for CRT power-on
@@ -15,20 +30,16 @@ export function boot() {
   if (inputLine) inputLine.style.display = "none";
 
   const biosLines = state.DATA.boot || [];
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const fortune = state.FORTUNES[Math.floor(Math.random() * state.FORTUNES.length)];
 
-  const profileLines = [];
-  state.ASCII_NAME.forEach(l => profileLines.push({ text: l, cls: "ascii-art", delay: 30 }));
-
-  profileLines.push({ text: "", delay: 50 });
-  profileLines.push({ text: "  Site Reliability Engineer", cls: "line-comment", delay: 30 });
-  profileLines.push({ text: "  bnied@spaceduck.org", cls: "line-comment", delay: 30 });
-  profileLines.push({ text: "", delay: 30 });
-  profileLines.push({ text: SEP, cls: "line-separator", delay: 50 });
-  profileLines.push({ text: "", delay: 30 });
-  profileLines.push({ text: "  Type 'help' for available commands.", cls: "line-ok", delay: 0 });
-  profileLines.push({ text: "", delay: 0 });
-
-  const allBootLines = [...biosLines, ...profileLines];
+  const allBootLines = buildBootLines({
+    bios: biosLines,
+    asciiName: state.ASCII_NAME,
+    role: "Site Reliability Engineer",
+    email: "bnied@spaceduck.org",
+    fortune,
+  });
 
   let i = 0;
   let cumulativeDelay = POST_DELAY;
@@ -44,11 +55,15 @@ export function boot() {
       return;
     }
     const line = allBootLines[i];
-    const lineDelay = line.delay !== undefined ? line.delay : 35;
+    const lineDelay = reduceMotion ? 0 : (line.delay !== undefined ? line.delay : 35);
     cumulativeDelay += lineDelay;
 
     setTimeout(() => {
-      addLine(line.text, line.cls, false);
+      if (line.type === "countup") {
+        renderCountup(line, reduceMotion);
+      } else {
+        addLine(line.text, line.cls, false);
+      }
       scrollToBottom();
     }, cumulativeDelay);
 
