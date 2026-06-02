@@ -6,4 +6,5 @@ export const output      = document.getElementById("output");
 export const cmdInput    = document.getElementById("cmd-input");
 export const terminal    = document.getElementById("terminal");
 export const inputSizer  = document.getElementById("input-sizer");
+export const cursor      = document.getElementById("cursor");
 export const noiseCanvas = document.getElementById("noise");

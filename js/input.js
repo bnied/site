@@ -1,33 +1,33 @@
 // Keyboard and input handling: cursor sync, tab completion (with ghost text),
 // history navigation, Ctrl+L to clear, click-to-focus.
 
-import { cmdInput, inputSizer, output } from "./dom.js";
+import { cmdInput, inputSizer, cursor, output } from "./dom.js";
 import { state } from "./state.js";
+import { ghostSuggestion, completeInput } from "./completion.js";
 
 let historyIdx = -1;
 
 function syncCursor() {
   inputSizer.textContent = cmdInput.value || "";
-}
-
-function getCompletion(partial) {
-  if (!partial) return null;
-  const lower = partial.toLowerCase();
-  const matches = state.COMMANDS.filter(c => c.startsWith(lower));
-  return matches.length === 1 ? matches[0] : null;
+  // The cursor is absolutely positioned; place it at the end of the typed
+  // text (= the hidden sizer's width) so it overlays the start of any ghost
+  // suggestion rather than sitting in the layout flow between them.
+  cursor.style.left = inputSizer.offsetWidth + "px";
 }
 
 function showTabGhost() {
   const existing = document.getElementById("tab-ghost");
   if (existing) existing.remove();
 
-  const val = cmdInput.value;
-  const match = getCompletion(val);
-  if (match && val.length > 0 && match !== val.toLowerCase()) {
+  const suggestion = ghostSuggestion(cmdInput.value, state.COMMANDS);
+  if (suggestion) {
     const ghost = document.createElement("span");
     ghost.id = "tab-ghost";
-    ghost.textContent = match.slice(val.length);
-    inputSizer.parentNode.insertBefore(ghost, document.getElementById("cursor"));
+    ghost.textContent = suggestion;
+    // Sits in normal flow right after the (hidden) sizer, so it's contiguous
+    // with the typed text. The absolutely-positioned cursor overlays the
+    // boundary (the first ghost char), fish-style — no gap.
+    inputSizer.insertAdjacentElement("afterend", ghost);
   }
 }
 
@@ -53,11 +53,12 @@ export function initInput(runCommand) {
       clearTabGhost();
     } else if (e.key === "Tab") {
       e.preventDefault();
-      const match = getCompletion(cmdInput.value);
-      if (match) {
-        cmdInput.value = match;
+      const completed = completeInput(cmdInput.value, state.COMMANDS);
+      if (completed !== null) {
+        cmdInput.value = completed;
         syncCursor();
         clearTabGhost();
+        showTabGhost();
       }
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
@@ -85,4 +86,6 @@ export function initInput(runCommand) {
   });
 
   document.addEventListener("click", () => cmdInput.focus());
+
+  syncCursor();
 }

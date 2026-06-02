@@ -14,18 +14,34 @@ Personal website with a CRT terminal aesthetic. Visitors interact via a command 
 | `education` | Academic background |
 | `contact` | Email, GitHub, LinkedIn |
 | `theme <name>` | Switch color theme (green, amber, blue, high-contrast, colorblind) |
+| `figlet <text>` | Render big ASCII banner text |
+| `lolcat` | Rainbow-colorize output (best at the end of a pipe) |
 | `help` | List all commands |
 
 ## Easter Eggs
 
 Too many to list. Try some Linux commands and see what happens.
 
+## Pipes
+
+Commands compose with `|` just like a real shell:
+
+```
+fortune | cowsay
+figlet bnied | lolcat
+echo hello | figlet | lolcat
+cat about | cowsay
+neofetch | lolcat
+```
+
+Pipeable commands: `echo`, `fortune`, `cat <section>`, `figlet`, `cowsay`, `lolcat`, `neofetch`, `ls`, `uname`, `whoami`, `pwd`, `hostname`, `date`, `uptime`.
+
 ## Tech Stack
 
 - Vanilla HTML, CSS, JavaScript -- no frameworks, no build step
 - [Fira Code](https://github.com/tonsky/FiraCode) font
 - [js-dos](https://js-dos.com/) for DOOM (loaded on demand)
-- Content stored in `data/*.json`, logic in `js/script.js`
+- Content stored in `data/*.json`, logic split across ES modules in `js/`
 
 ## Structure
 
@@ -33,14 +49,20 @@ Too many to list. Try some Linux commands and see what happens.
 .
 ├── index.html
 ├── css/style.css
-├── js/script.js
+├── js/
+│   ├── main.js              # entry point
+│   ├── commands.js          # command dispatch
+│   ├── pipeline.js          # pipe engine
+│   ├── data.js              # loads JSON assets
+│   └── easter-eggs/         # easter-egg handlers
 ├── data/
 │   ├── sections.json        # resume sections
 │   ├── experience.json      # per-role details
 │   ├── help.json            # command help text
 │   ├── fortunes.json        # fortune quotes
 │   ├── ascii.json           # ASCII art assets
-│   └── easter-eggs.json     # easter egg data
+│   ├── easter-eggs.json     # easter egg data
+│   └── figlet-font.json     # block font for figlet
 ├── assets/
 │   └── doom.jsdos           # DOOM shareware bundle
 └── img/                     # favicon variants
@@ -51,6 +73,14 @@ Too many to list. Try some Linux commands and see what happens.
 ```bash
 python3 -m http.server 8000
 # open http://localhost:8000
+```
+
+## Tests
+
+Pure logic (figlet, cowsay, the pipe engine) has unit tests run by Node's built-in runner — no dependencies, no build:
+
+```bash
+node --test
 ```
 
 ## License

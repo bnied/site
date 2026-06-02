@@ -11,11 +11,14 @@
   { "text": "  projects      open-source work", "cls": "line-highlight" },
   { "text": "  education     academic background", "cls": "line-highlight" },
   { "text": "  contact       reach me", "cls": "line-highlight" },
+  { "text": "  figlet &lt;text&gt; big ascii banner", "cls": "line-highlight" },
+  { "text": "  lolcat        rainbow-ify output", "cls": "line-highlight" },
   { "text": "  all           show everything", "cls": "line-highlight" },
   { "text": "  theme         change color theme", "cls": "line-highlight" },
   { "text": "  clear         clear terminal", "cls": "line-highlight" },
   { "text": "  help          this message", "cls": "line-highlight" },
   { "text": "" },
   { "text": "  tip: press &lt;Tab&gt; to autocomplete", "cls": "line-comment" },
+  { "text": "  tip: pipe commands together, e.g. fortune | cowsay", "cls": "line-comment" },
   { "text": "" }
 ]

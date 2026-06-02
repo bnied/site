@@ -1,0 +1,237 @@
+// textsources.js — pure, DOM-free plain-text generators for terminal commands.
+// No imports from dom/render/state; no document/window/navigator/Date.now.
+// All time-dependent functions receive `now` (Date) and other env values as
+// explicit parameters so they can be tested deterministically and later piped.
+
+// ---------------------------------------------------------------------------
+// Simple one-liners
+// ---------------------------------------------------------------------------
+
+export function whoamiText() {
+  return ["visitor"];
+}
+
+export function pwdText() {
+  return ["/home/visitor"];
+}
+
+export function hostnameText() {
+  return ["bnied.dev"];
+}
+
+// ---------------------------------------------------------------------------
+// uname
+// ---------------------------------------------------------------------------
+
+/**
+ * @param {string} args  - everything after "uname" (e.g. "", "-a", "-s", "-r", "-m")
+ * @param {Date}   now
+ * @returns {string[]}
+ */
+export function unameText(args, now) {
+  const flag = args.trim();
+  if (flag === "-s") return ["bnied.dev"];
+  if (flag === "-r") return ["1.0.0"];
+  if (flag === "-m") return ["JavaScript/ES2024"];
+  // "" and "-a" both produce the full string; any other unknown flag does too
+  return ["bnied.dev 1.0.0 SPACEDUCK-BIOS SMP " + now.toUTCString() + " JavaScript/ES2024 browser"];
+}
+
+// ---------------------------------------------------------------------------
+// date
+// ---------------------------------------------------------------------------
+
+/**
+ * @param {Date} now
+ * @returns {string[]}
+ */
+export function dateText(now) {
+  return [now.toString()];
+}
+
+// ---------------------------------------------------------------------------
+// uptime
+// ---------------------------------------------------------------------------
+
+/**
+ * @param {Date}   now
+ * @param {number} pageLoadTime  - epoch ms of page load
+ * @returns {string[]}
+ */
+export function uptimeText(now, pageLoadTime) {
+  const elapsed = Math.floor((now.getTime() - pageLoadTime) / 1000);
+  const hrs  = Math.floor(elapsed / 3600);
+  const mins = Math.floor((elapsed % 3600) / 60);
+  const secs = elapsed % 60;
+  const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const upStr = (hrs > 0 ? hrs + " hr " : "") + mins + " min, " + secs + " sec";
+  return [`${timeStr} up ${upStr}, 1 user, load average: 0.42, 0.69, 1.337`];
+}
+
+// ---------------------------------------------------------------------------
+// ls
+// ---------------------------------------------------------------------------
+
+/**
+ * Build ls output rows from a flag/args string (everything after "ls").
+ * Returns an array of { text, cls } objects — NO leading two-space indent,
+ * NO trailing blank-line entry.
+ *
+ * @param {string} args  e.g. " -la", "-1", ""
+ * @returns {{ text: string, cls: string | null }[]}
+ */
+export function lsRows(args) {
+  const flagStr = args.replace(/[\s-]/g, "");
+  const flags = new Set(flagStr);
+
+  const showHidden = flags.has("a");
+  const longFormat = flags.has("l");
+  const showSize   = flags.has("s");
+  const humanSize  = flags.has("h");
+  const onePerLine = flags.has("1");
+  const reverse    = flags.has("r");
+  const byTime     = flags.has("t");
+  const classify   = flags.has("F");
+
+  let files = [
+    { name: "about.txt",       size: 1337, mtime: "Apr 10  2026", kind: "file" },
+    { name: "contact.txt",     size: 2048, mtime: "Apr 10  2026", kind: "file" },
+    { name: "experience.txt",  size: 4096, mtime: "Apr 13  2026", kind: "file" },
+    { name: "skills.txt",      size: 3072, mtime: "Apr 10  2026", kind: "file" },
+    { name: "projects.txt",    size: 2560, mtime: "Apr 13  2026", kind: "file" },
+    { name: "education.txt",   size:  512, mtime: "Apr 10  2026", kind: "file" },
+  ];
+
+  const hidden = [
+    { name: ".",               size: 4096, mtime: "Apr 13  2026", kind: "dir" },
+    { name: "..",              size: 4096, mtime: "Apr 10  2026", kind: "dir" },
+    { name: ".secrets",        size:    0, mtime: "Apr 10  2026", kind: "file", perms: "-rwx------" },
+    { name: ".bash_history",   size:  666, mtime: "Apr 13  2026", kind: "file" },
+  ];
+
+  if (showHidden) files = [...hidden, ...files];
+  if (byTime) {
+    files.sort((a, b) => b.mtime.localeCompare(a.mtime));
+  }
+  if (reverse) files.reverse();
+
+  function fmtSize(n) {
+    if (!humanSize) return String(n);
+    if (n < 1024) return n + "B";
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + "K";
+    return (n / 1024 / 1024).toFixed(1) + "M";
+  }
+
+  function blocks(n) {
+    return Math.max(1, Math.ceil(n / 1024));
+  }
+
+  function classifyName(f) {
+    if (!classify) return f.name;
+    if (f.kind === "dir") return f.name + "/";
+    return f.name;
+  }
+
+  const rows = [];
+
+  if (longFormat) {
+    const totalBlocks = files.reduce((acc, f) => acc + blocks(f.size), 0);
+    rows.push({ text: `total ${totalBlocks}`, cls: "line-comment" });
+
+    const sizeStrs = files.map(f => fmtSize(f.size));
+    const maxSizeW = Math.max(...sizeStrs.map(s => s.length));
+    const blockStrs = files.map(f => String(blocks(f.size)));
+    const maxBlockW = Math.max(...blockStrs.map(s => s.length));
+
+    files.forEach((f, idx) => {
+      const perms = f.perms || (f.kind === "dir" ? "drwxr-xr-x" : "-rw-r--r--");
+      const links = f.kind === "dir" ? "2" : "1";
+      const size = sizeStrs[idx].padStart(maxSizeW);
+      const blockStr = showSize ? blockStrs[idx].padStart(maxBlockW) + " " : "";
+      const name = classifyName(f);
+      const cls = f.name.startsWith(".") ? "line-comment" : (f.kind === "dir" ? "line-highlight" : "line-accent");
+      rows.push({ text: `${blockStr}${perms}  ${links} bnied  staff  ${size} ${f.mtime} ${name}`, cls });
+    });
+  } else if (onePerLine) {
+    files.forEach(f => {
+      const cls = f.name.startsWith(".") ? "line-comment" : (f.kind === "dir" ? "line-highlight" : "line-accent");
+      rows.push({ text: classifyName(f), cls });
+    });
+  } else {
+    const names = files.map(classifyName);
+    const colW = Math.max(...names.map(n => n.length)) + 3;
+    const cols = 3;
+    for (let i = 0; i < names.length; i += cols) {
+      const row = names.slice(i, i + cols).map(n => n.padEnd(colW)).join("");
+      rows.push({ text: row.trimEnd(), cls: "line-accent" });
+    }
+  }
+
+  return rows;
+}
+
+/**
+ * Convenience wrapper: plain text lines only (no cls).
+ * @param {string} args
+ * @returns {string[]}
+ */
+export function lsText(args) {
+  return lsRows(args).map(r => r.text);
+}
+
+// ---------------------------------------------------------------------------
+// neofetch
+// ---------------------------------------------------------------------------
+
+/**
+ * Render neofetch as plain text (no HTML spans, no indent).
+ *
+ * @param {{
+ *   neofetchAscii: string[],
+ *   neofetchInfo:  { label: string, value: string, cls?: string }[],
+ *   now:           Date,
+ *   pageLoadTime:  number,
+ *   theme:         string,
+ *   locale:        string,
+ * }} ctx
+ * @returns {string[]}
+ */
+export function neofetchText(ctx) {
+  const { neofetchAscii, neofetchInfo, now, pageLoadTime, theme, locale } = ctx;
+
+  const uptimeMs  = now.getTime() - pageLoadTime;
+  const uptimeMin = Math.floor(uptimeMs / 60000);
+  const uptimeHr  = Math.floor(uptimeMin / 60);
+  const upStr = uptimeHr > 0
+    ? `${uptimeHr} hours, ${uptimeMin % 60} mins`
+    : `${uptimeMin} mins`;
+
+  const artW  = 24;
+  const ascii = neofetchAscii.map(l => l.padEnd(artW));
+
+  const info = neofetchInfo.map(i => ({ ...i }));
+  info.push({ label: "Uptime", value: upStr });
+  info.push({ label: "Theme",  value: theme });
+  info.push({ label: "Locale", value: locale });
+
+  const maxLines = Math.max(ascii.length, info.length);
+  const lines = [];
+
+  for (let i = 0; i < maxLines; i++) {
+    const artPart  = i < ascii.length ? ascii[i] : " ".repeat(23);
+    let   infoPart = "";
+    if (i < info.length) {
+      const item = info[i];
+      if (item.cls === "line-heading") {
+        infoPart = item.label + item.value;
+      } else if (item.cls === "line-separator") {
+        infoPart = item.value;
+      } else {
+        infoPart = item.label + ": " + item.value;
+      }
+    }
+    lines.push(artPart + "  " + infoPart);
+  }
+
+  return lines;
+}

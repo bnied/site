@@ -4,6 +4,7 @@
 import { output } from "../dom.js";
 import { addLine, escapeHTML, pad, scrollToBottom } from "../render.js";
 import { state } from "../state.js";
+import { cowsayText } from "../cowsay.js";
 
 export function runNeofetch() {
   const uptimeMs = Date.now() - state.pageLoadTime;
@@ -132,20 +133,6 @@ export function showCatPicture() {
 }
 
 export function runCowsay(message) {
-  const msg = message || "moo";
-  const top = "   " + "_".repeat(msg.length + 2);
-  const mid = "  < " + escapeHTML(msg) + " >";
-  const bot = "   " + "-".repeat(msg.length + 2);
-  const cow = [
-    top,
-    mid,
-    bot,
-    "          \\   ^__^",
-    "           \\  (oo)\\_______",
-    "              (__)\\       )\\/\\",
-    "                  ||----w |",
-    "                  ||     ||",
-  ];
-  cow.forEach(l => addLine(l, "line-accent", true));
+  cowsayText(message).forEach(l => addLine(escapeHTML(l), "line-accent", true));
   addLine("", null, false);
 }
