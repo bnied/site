@@ -11,6 +11,8 @@ import { buildBootLines } from "./bootlines.js";
 function renderCountup(line, reduceMotion) {
   addLine(line.label + line.target + line.unit, line.cls, false);
   if (reduceMotion) return;
+  // Capture the line element NOW: the count-up runs ~390ms and overlaps the
+  // next boot lines appending, so we must NOT re-read lastElementChild later.
   const el = output.lastElementChild;
   const steps = 14;
   let n = 0;
@@ -23,14 +25,14 @@ function renderCountup(line, reduceMotion) {
 }
 
 export function boot() {
-  const POST_DELAY = 1600; // wait for CRT power-on
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const POST_DELAY = reduceMotion ? 0 : 1600; // wait for CRT power-on (skip under reduced motion)
 
   // Hide the prompt during the boot sequence
   const inputLine = document.getElementById("input-line");
   if (inputLine) inputLine.style.display = "none";
 
   const biosLines = state.DATA.boot || [];
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const fortune = state.FORTUNES[Math.floor(Math.random() * state.FORTUNES.length)];
 
   const allBootLines = buildBootLines({
