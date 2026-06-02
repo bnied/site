@@ -16,6 +16,7 @@ Personal website with a CRT terminal aesthetic. Visitors interact via a command 
 | `theme <name>` | Switch color theme (green, amber, blue, high-contrast, colorblind) |
 | `figlet <text>` | Render big ASCII banner text |
 | `lolcat` | Rainbow-colorize output (best at the end of a pipe) |
+| `crt` | CRT effect intensity: `off` / `on` / `max` (persists) |
 | `help` | List all commands |
 
 ## Easter Eggs
@@ -35,6 +36,18 @@ neofetch | lolcat
 ```
 
 Pipeable commands: `echo`, `fortune`, `cat <section>`, `figlet`, `cowsay`, `lolcat`, `neofetch`, `ls`, `uname`, `whoami`, `pwd`, `hostname`, `date`, `uptime`.
+
+## CRT effects
+
+The phosphor-CRT look has three intensity levels, set with `crt`:
+
+- `crt off` — flat, plain terminal (max readability / low power)
+- `crt on` — default: curvature, bloom, glare, scanlines, phosphor afterglow
+- `crt max` — adds edge chromatic aberration and an occasional sync-roll
+
+The choice persists across visits (localStorage). All levels honor
+`prefers-reduced-motion`: animations freeze, the static look remains, and the
+boot sequence collapses to near-instant.
 
 ## Tech Stack
 
