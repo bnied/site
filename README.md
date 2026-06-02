@@ -14,11 +14,26 @@ Personal website with a CRT terminal aesthetic. Visitors interact via a command 
 | `education` | Academic background |
 | `contact` | Email, GitHub, LinkedIn |
 | `theme <name>` | Switch color theme (green, amber, blue, high-contrast, colorblind) |
+| `figlet <text>` | Render big ASCII banner text |
+| `lolcat` | Rainbow-colorize output (best at the end of a pipe) |
 | `help` | List all commands |
 
 ## Easter Eggs
 
 Too many to list. Try some Linux commands and see what happens.
+
+## Pipes
+
+Commands compose with `|` just like a real shell:
+
+```
+fortune | cowsay
+figlet bnied | lolcat
+echo hello | figlet | lolcat
+cat about | cowsay
+```
+
+Pipeable commands: `echo`, `fortune`, `cat <section>`, `figlet`, `cowsay`, `lolcat`.
 
 ## Tech Stack
 
@@ -40,7 +55,8 @@ Too many to list. Try some Linux commands and see what happens.
 │   ├── help.json            # command help text
 │   ├── fortunes.json        # fortune quotes
 │   ├── ascii.json           # ASCII art assets
-│   └── easter-eggs.json     # easter egg data
+│   ├── easter-eggs.json     # easter egg data
+│   └── figlet-font.json     # block font for figlet
 ├── assets/
 │   └── doom.jsdos           # DOOM shareware bundle
 └── img/                     # favicon variants
@@ -51,6 +67,14 @@ Too many to list. Try some Linux commands and see what happens.
 ```bash
 python3 -m http.server 8000
 # open http://localhost:8000
+```
+
+## Tests
+
+Pure logic (figlet, cowsay, the pipe engine) has unit tests run by Node's built-in runner — no dependencies, no build:
+
+```bash
+node --test
 ```
 
 ## License

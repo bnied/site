@@ -14,13 +14,14 @@ export function resolveSEP(lines) {
 }
 
 export async function loadData() {
-  const [sectionsData, expData, helpData, fortunesData, asciiData, eggsData] = await Promise.all([
+  const [sectionsData, expData, helpData, fortunesData, asciiData, eggsData, figletFont] = await Promise.all([
     fetch("data/sections.json").then(r => r.json()),
     fetch("data/experience.json").then(r => r.json()),
     fetch("data/help.json").then(r => r.json()),
     fetch("data/fortunes.json").then(r => r.json()),
     fetch("data/ascii.json").then(r => r.json()),
     fetch("data/easter-eggs.json").then(r => r.json()),
+    fetch("data/figlet-font.json").then(r => r.json()),
   ]);
 
   state.sections = {};
@@ -36,12 +37,12 @@ export async function loadData() {
   state.helpText = resolveSEP(helpData);
   state.FORTUNES = fortunesData;
   state.ASCII_NAME = asciiData.name;
-  state.DATA = { ...asciiData, ...eggsData };
+  state.DATA = { ...asciiData, ...eggsData, figletFont };
 
   state.EXP_KEYS = Object.keys(state.experienceDetail);
   state.COMMANDS = [
     "about", "skills", "experience", "projects", "education", "contact",
-    "all", "clear", "help", "theme",
+    "all", "clear", "help", "theme", "figlet", "lolcat",
     ...state.EXP_KEYS.map(k => "experience " + k),
     ...state.THEME_NAMES.map(t => "theme " + t),
   ];
