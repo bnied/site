@@ -4,20 +4,43 @@
 import { cmdInput, inputSizer, cursor, output } from "./dom.js";
 import { state } from "./state.js";
 import { ghostSuggestion, completeInput } from "./completion.js";
+import { cursorSizerText } from "./cursor.js";
 
 let historyIdx = -1;
 
+// Hidden, absolutely-positioned mirror used ONLY to measure the caret's x-offset
+// (the width of the text up to the caret). It must NOT be in normal flow: the
+// in-flow #input-sizer sizes #input-wrap and thus the 100%-width #cmd-input, so
+// anything that shrinks the flowed width would clip the input's text.
+const caretMeasure = document.createElement("span");
+caretMeasure.setAttribute("aria-hidden", "true");
+caretMeasure.style.cssText =
+  "position:absolute; visibility:hidden; white-space:pre; left:0; top:0; pointer-events:none;";
+inputSizer.parentElement.appendChild(caretMeasure); // inherits the terminal font
+
+function caretAtEnd() {
+  return cmdInput.selectionStart === cmdInput.value.length;
+}
+
 function syncCursor() {
+  // The sizer holds the FULL value so #input-wrap (and the input) stays wide
+  // enough to render every character. The caret position is measured separately
+  // from the out-of-flow mirror so it can sit mid-text without clipping.
   inputSizer.textContent = cmdInput.value || "";
-  // The cursor is absolutely positioned; place it at the end of the typed
-  // text (= the hidden sizer's width) so it overlays the start of any ghost
-  // suggestion rather than sitting in the layout flow between them.
-  cursor.style.left = inputSizer.offsetWidth + "px";
+  caretMeasure.textContent = cursorSizerText(cmdInput.value, cmdInput.selectionStart);
+  cursor.style.left = caretMeasure.offsetWidth + "px";
+  // A full block would hide the glyph it overlaps mid-text; thin it to a bar
+  // unless the caret is at the line end (where the block covers empty space).
+  cursor.classList.toggle("insert", !caretAtEnd());
 }
 
 function showTabGhost() {
   const existing = document.getElementById("tab-ghost");
   if (existing) existing.remove();
+
+  // The ghost is appended in flow after the sizer, so it only lands correctly
+  // when the caret (and thus the sizer's mirrored text) is at the line end.
+  if (!caretAtEnd()) return;
 
   const suggestion = ghostSuggestion(cmdInput.value, state.COMMANDS);
   if (suggestion) {
@@ -86,6 +109,16 @@ export function initInput(runCommand) {
   });
 
   document.addEventListener("click", () => cmdInput.focus());
+
+  // Caret moves that don't change the value — arrow keys, Home/End, clicking
+  // into the text — fire selectionchange but not input. Re-sync the cursor so
+  // the block follows the caret, and refresh the ghost (drops it when the
+  // caret leaves the end of the line).
+  document.addEventListener("selectionchange", () => {
+    if (document.activeElement !== cmdInput) return;
+    syncCursor();
+    showTabGhost();
+  });
 
   syncCursor();
 }

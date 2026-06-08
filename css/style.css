@@ -537,6 +537,14 @@ html, body {
   animation: cursorBlink 1s step-end infinite;
 }
 
+/* Mid-text editing: the block would sit on top of (and hide) the character to
+   the right of the caret. Switch to a thin bar that sits between glyphs so the
+   text stays fully visible. The block is kept only at end-of-line, where it
+   covers empty space. */
+.cursor.insert {
+  width: 2px;
+}
+
 @keyframes cursorBlink {
   50% { opacity: 0; }
 }
