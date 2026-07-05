@@ -180,6 +180,86 @@ export function lsText(args) {
 }
 
 // ---------------------------------------------------------------------------
+// ps
+// ---------------------------------------------------------------------------
+
+/**
+ * Render a ps-style process table. First line is the header.
+ *
+ * @param {{ pid: number, user: string, cpu: number, mem: number, cmd: string }[]} processes
+ * @returns {string[]}
+ */
+export function psText(processes) {
+  const lines = ["  PID USER      %CPU %MEM COMMAND"];
+  processes.forEach(p => {
+    lines.push(
+      String(p.pid).padStart(5) + " " +
+      p.user.padEnd(9) + " " +
+      p.cpu.toFixed(1).padStart(4) + " " +
+      p.mem.toFixed(1).padStart(4) + " " +
+      p.cmd
+    );
+  });
+  return lines;
+}
+
+// ---------------------------------------------------------------------------
+// free
+// ---------------------------------------------------------------------------
+
+/**
+ * @param {string} args  - flags after "free" (ignored; 640K is 640K)
+ * @returns {string[]}
+ */
+export function freeText(args) {
+  return [
+    "              total        used        free      shared",
+    "Mem:           640K        640K          0K          0K",
+    "Swap:            0K          0K          0K",
+    "",
+    "(640K ought to be enough for anybody)",
+  ];
+}
+
+// ---------------------------------------------------------------------------
+// df
+// ---------------------------------------------------------------------------
+
+/**
+ * @param {string} args  - flags after "df" (ignored; sizes are already human)
+ * @returns {string[]}
+ */
+export function dfText(args) {
+  return [
+    "Filesystem      Size  Used Avail Use% Mounted on",
+    "/dev/duck0       42K   40K    2K  95% /",
+    "tmpfs           640K     0  640K   0% /dev/shm",
+    "/dev/coffee      12G   12G     0 100% /home/visitor/coffee",
+    "cloud:/         8.0E  4.2E  3.8E  53% /mnt/somebody-elses-computer",
+  ];
+}
+
+// ---------------------------------------------------------------------------
+// yes
+// ---------------------------------------------------------------------------
+
+const YES_LINES = 15;
+
+/**
+ * A mercifully finite `yes`.
+ *
+ * @param {string} args  - text to repeat (defaults to "y")
+ * @returns {string[]}
+ */
+export function yesText(args) {
+  const word = args.trim() || "y";
+  const lines = Array(YES_LINES).fill(word);
+  lines.push("^C");
+  lines.push("(that could have gone on forever — you're welcome)");
+  return lines;
+}
+
+// ---------------------------------------------------------------------------
 // neofetch
 // ---------------------------------------------------------------------------
 

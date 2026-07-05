@@ -12,7 +12,10 @@ import {
 import { hasPipe, runPipeline } from "./pipeline.js";
 import { figletText } from "./figlet.js";
 import { CRT_LEVELS, crtLevelFromArg, getCrt, setCrt } from "./crt.js";
-import { unameText, whoamiText, pwdText, hostnameText, dateText, uptimeText } from "./textsources.js";
+import {
+  unameText, whoamiText, pwdText, hostnameText, dateText, uptimeText,
+  psText, freeText, dfText, yesText,
+} from "./textsources.js";
 
 const LOLCAT_COL_STEP = 12;
 const LOLCAT_ROW_STEP = 20;
@@ -28,6 +31,7 @@ function pipelineCtx() {
     locale: navigator.language || "en-US",
     neofetchAscii: state.DATA.neofetch || [],
     neofetchInfo: state.DATA.neofetchInfo || [],
+    processes: state.DATA.btopProcesses || [],
   };
 }
 
@@ -78,6 +82,17 @@ export function runCommand(raw) {
     return;
   }
 
+  // The fork bomb contains a `|`, so it must be caught before the pipe engine.
+  if (cmd.replace(/\s/g, "") === ":(){:|:&};:") {
+    addLine("  -bash: fork: retry: Resource temporarily unavailable", "line-highlight", true);
+    addLine("  -bash: fork: retry: Resource temporarily unavailable", "line-highlight", true);
+    addLine("  -bash: fork: Interrupted system call", "line-highlight", true);
+    addLine("  (nice try. the duck has ulimits.)", "line-comment", true);
+    addLine("", null, false);
+    scrollToBottom();
+    return;
+  }
+
   if (hasPipe(raw)) {
     renderPipelineResult(runPipeline(raw, pipelineCtx()));
     scrollToBottom();
@@ -109,9 +124,40 @@ export function runCommand(raw) {
       addLine("  available: " + state.EXP_KEYS.join(", "), "line-comment", true);
       addLine("", null, false);
     }
+  } else if (cmd === "sudo make me a sandwich") {
+    addLine("  Okay.", "line-ok", true);
+    addLine("", null, false);
   } else if (cmd.startsWith("sudo ")) {
     addLine("  visitor is not in the sudoers file.", "line-highlight", true);
     addLine("  This incident will be reported.", "line-highlight", true);
+    addLine("", null, false);
+  } else if (cmd === "sudo") {
+    addLine("  usage: sudo <command>", "line-highlight", true);
+    addLine("  (not that it will help you here)", "line-comment", true);
+    addLine("", null, false);
+  } else if (cmd === "su" || cmd.startsWith("su ")) {
+    addLine("  Password: ", null, true);
+    addLine("  su: Authentication failure", "line-highlight", true);
+    addLine("  (and no, it's not 'hunter2'. we checked.)", "line-comment", true);
+    addLine("", null, false);
+  } else if (cmd === "passwd" || cmd.startsWith("passwd ")) {
+    addLine("  passwd: Authentication token manipulation error", "line-highlight", true);
+    addLine("  passwd: password unchanged", "line-highlight", true);
+    addLine("", null, false);
+  } else if (cmd.startsWith("chmod ") || cmd.startsWith("chown ")) {
+    const target = cmd.split(" ").pop();
+    addLine(`  ${cmd.slice(0, 5)}: changing permissions of '${escapeHTML(target)}': Operation not permitted`, "line-highlight", true);
+    addLine("", null, false);
+  } else if (cmd === "kill -9 1" || cmd === "kill 1") {
+    addLine("  kill: (1): Operation not permitted", "line-highlight", true);
+    addLine("  (init has survived worse than you)", "line-comment", true);
+    addLine("", null, false);
+  } else if (cmd.startsWith("kill ") || cmd.startsWith("killall ")) {
+    const target = cmd.split(" ").pop();
+    addLine(`  kill: (${escapeHTML(target)}): Operation not permitted`, "line-highlight", true);
+    addLine("", null, false);
+  } else if (cmd === "kill" || cmd === "killall") {
+    addLine("  usage: kill <pid>", "line-highlight", true);
     addLine("", null, false);
   } else if (cmd.startsWith("cat ")) {
     const file = cmd.slice(4).trim();
@@ -184,6 +230,36 @@ export function runCommand(raw) {
     renderPlain(dateText(new Date()));
   } else if (cmd === "uptime") {
     renderPlain(uptimeText(new Date(), state.pageLoadTime));
+  } else if (cmd === "ps" || /^ps\s+(aux|-ef|-e|-a|-x|-ax)$/.test(cmd)) {
+    const lines = psText(state.DATA.btopProcesses || []);
+    addLine(`  <span class="line-comment">${escapeHTML(lines[0])}</span>`, null, true);
+    lines.slice(1).forEach(l => addLine("  " + escapeHTML(l), null, true));
+    addLine("", null, false);
+  } else if (cmd === "free" || /^free\s+-[hmgb]$/.test(cmd)) {
+    renderPlain(freeText(cmd.slice(4).trim()));
+  } else if (cmd === "df" || /^df\s+-[haTi]+$/.test(cmd)) {
+    renderPlain(dfText(cmd.slice(2).trim()));
+  } else if (cmd === "yes" || cmd.startsWith("yes ")) {
+    renderPlain(yesText(raw.trim().slice(3)));
+  } else if (cmd === "who" || cmd === "w" || cmd === "who am i") {
+    addLine("  visitor  tty1  " + new Date(state.pageLoadTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) + "  (that's you)", null, true);
+    addLine("", null, false);
+  } else if (/^:(q|q!|wq|wq!|x)$/.test(cmd)) {
+    addLine("  E492: Not an editor command — you're not in vim.", "line-highlight", true);
+    addLine("  (I respect the reflex, though.)", "line-comment", true);
+    addLine("", null, false);
+  } else if (cmd === "telnet towel.blinkenlights.nl") {
+    addLine("  Trying 94.142.241.111...", "line-system", true);
+    addLine("  telnet: connect to address 94.142.241.111: Connection refused", "line-highlight", true);
+    addLine("  (a deep cut. sadly, no Star Wars here — try 'sl' instead.)", "line-comment", true);
+    addLine("", null, false);
+  } else if (cmd.startsWith("telnet ")) {
+    addLine(`  telnet: could not resolve ${escapeHTML(cmd.slice(7).trim())}: Name or service not known`, "line-highlight", true);
+    addLine("  (it's 2026. use ssh. actually, don't use that here either.)", "line-comment", true);
+    addLine("", null, false);
+  } else if (cmd === "telnet") {
+    addLine("  usage: telnet <host>", "line-highlight", true);
+    addLine("", null, false);
   } else if (cmd === "ls" || /^ls\s+-[lashFrt1]+$/.test(cmd) || /^ls\s+(-[lashFrt1]+\s+)+-[lashFrt1]+$/.test(cmd)) {
     runLs(cmd);
   } else if (cmd.startsWith("cd ")) {

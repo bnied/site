@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   unameText, whoamiText, pwdText, hostnameText, dateText, uptimeText,
-  lsRows, lsText, neofetchText,
+  lsRows, lsText, neofetchText, psText, freeText, dfText, yesText,
 } from "../js/textsources.js";
 
 // Fixed reference time for deterministic assertions.
@@ -65,4 +65,42 @@ test("neofetchText renders plain ascii + info including uptime/theme/locale", ()
   assert.ok(joined.includes("Uptime: 1 mins"));
   // plain text — no HTML spans
   assert.ok(!joined.includes("<span"));
+});
+
+test("psText renders a header plus one aligned row per process", () => {
+  const lines = psText([
+    { pid: 1, user: "root", cpu: 0.0, mem: 0.3, cmd: "systemd" },
+    { pid: 1337, user: "bnied", cpu: 1.5, mem: 12.4, cmd: "btop" },
+  ]);
+  assert.equal(lines.length, 3);
+  assert.ok(lines[0].includes("PID"));
+  assert.ok(lines[0].includes("COMMAND"));
+  assert.ok(lines[1].endsWith("systemd"));
+  assert.ok(lines[2].includes("1337"));
+  assert.ok(lines[2].includes("12.4"));
+});
+
+test("freeText reports 640K totals", () => {
+  const lines = freeText("");
+  assert.ok(lines[0].includes("total"));
+  assert.ok(lines[1].startsWith("Mem:"));
+  assert.ok(lines[1].includes("640K"));
+  assert.ok(lines.some(l => l.includes("enough for anybody")));
+});
+
+test("dfText lists fake filesystems with a header", () => {
+  const lines = dfText("-h");
+  assert.ok(lines[0].startsWith("Filesystem"));
+  assert.ok(lines.some(l => l.includes("/dev/duck0")));
+  assert.ok(lines.some(l => l.includes("somebody-elses-computer")));
+});
+
+test("yesText repeats the word a finite number of times and ends with ^C", () => {
+  const plain = yesText("");
+  assert.equal(plain[0], "y");
+  assert.ok(plain.includes("^C"));
+  const custom = yesText("no");
+  assert.equal(custom[0], "no");
+  // finite: bounded well under any runaway length
+  assert.ok(custom.length < 30);
 });
