@@ -704,3 +704,479 @@ html[data-crt="max"] #screen { animation: flicker 8s infinite, syncRoll 24s ease
   .line-enter { animation: none; }
   .cursor { animation: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   X11 SESSION (startx easter egg)
+   twm floating windows + root weave desktop
+   + Netscape 3.x Motif browser in period bitmap type
+   ═══════════════════════════════════════════════════════════ */
+
+@font-face {
+  font-family: 'Fixedsys';
+  src: url('../fonts/Fixedsys500c.woff') format('woff'),
+       url('../fonts/Fixedsys500c.ttf') format('truetype');
+  font-display: swap;
+}
+
+#x-session {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  font-family: 'Fixedsys', monospace;
+  -webkit-font-smoothing: none;
+}
+
+/* ── root window: classic X weave stipple ── */
+.x-desktop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  cursor: crosshair;
+  background-color: #5e5e5e;
+  background-image:
+    repeating-linear-gradient(45deg, #545454 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(-45deg, #565656 0 1px, transparent 1px 4px);
+}
+.twm-hint {
+  position: absolute;
+  bottom: 10px;
+  right: 12px;
+  color: #9a9a9a;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+/* ── twm window frame ── */
+.twm-win {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  background: #c0c0c0;
+  border: 1px solid #000;
+  min-width: 120px;
+  min-height: 100px;
+}
+.twm-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 23px;
+  flex: none;
+  padding: 0 3px;
+  background: #c0c0c0;
+  color: #000;
+  border-bottom: 1px solid #000;
+  cursor: move;
+  user-select: none;
+  font-size: 15px;
+  white-space: nowrap;
+}
+.twm-win.focused .twm-titlebar {
+  background: #008080;
+  color: #ffffff;
+}
+.twm-btn {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  border: 1px solid #000;
+  background: inherit;
+  color: inherit;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+}
+.twm-iconify::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px solid currentColor;
+}
+.twm-resize::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 9px;
+  height: 9px;
+  border: 1px solid currentColor;
+}
+.twm-resize::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 5px;
+  height: 5px;
+  border: 1px solid currentColor;
+  background: inherit;
+}
+.twm-title { padding: 0 4px; }
+/* the hashed TitleHighlight strip, only on the focused window */
+.twm-hl { flex: 1; height: 11px; margin: 0 4px; }
+.twm-win.focused .twm-hl {
+  background: repeating-linear-gradient(
+    180deg,
+    #ffffff 0 1px, transparent 1px 3px
+  );
+}
+.twm-content {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── iconified windows on the root ── */
+.twm-icon {
+  position: absolute;
+  background: #c0c0c0;
+  border: 1px solid #000;
+  padding: 3px 8px 4px;
+  font-size: 14px;
+  color: #000;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.twm-icon::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border: 1px solid #000;
+  background: #008080;
+}
+
+/* ── twm root menu ── */
+.twm-menu {
+  position: absolute;
+  z-index: 9999;
+  background: #c0c0c0;
+  color: #000;
+  border: 1px solid #000;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.4);
+  font-size: 15px;
+  user-select: none;
+  min-width: 130px;
+}
+.twm-menu-title {
+  padding: 3px 14px;
+  background: #008080;
+  color: #fff;
+  border-bottom: 1px solid #000;
+}
+.twm-menu-item { padding: 3px 14px; cursor: pointer; }
+.twm-menu-item:hover { background: #000; color: #c0c0c0; }
+.twm-menu-sep { border-top: 1px solid #000; margin: 2px 0; }
+
+/* ── xclock ── */
+.xclock-face {
+  width: 100%;
+  height: 100%;
+  background: #c0c0c0;
+}
+
+/* ── Netscape chrome: Motif gray + bevels, bitmap type ── */
+.netscape {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #c0c0c0;
+  color: #000;
+  font-size: 15px;
+}
+.ns-menubar {
+  display: flex;
+  padding: 1px 4px;
+  border-bottom: 1px solid #808080;
+  user-select: none;
+  overflow: hidden;
+}
+.ns-menu { padding: 2px 8px; white-space: nowrap; }
+.ns-menu:active { background: #000080; color: #fff; }
+.ns-menu-help { margin-left: auto; }
+
+.ns-toolbar {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 4px;
+  border-bottom: 2px groove #e8e8e8;
+  overflow: hidden;
+}
+.ns-btn {
+  font-family: 'Fixedsys', monospace;
+  font-size: 12px;
+  color: #000;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #ffffff #6e6e6e #6e6e6e #ffffff;
+  padding: 2px 7px 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  cursor: pointer;
+  min-width: 50px;
+}
+.ns-btn:active { border-color: #6e6e6e #ffffff #ffffff #6e6e6e; background: #b0b0b0; }
+.ns-ico { font-size: 14px; line-height: 1; color: #31316a; }
+.ns-ico-stop { color: #8a1010; }
+
+/* the N throbber on its starfield */
+.ns-throbber {
+  margin-left: auto;
+  width: 44px;
+  min-width: 44px;
+  border: 2px solid;
+  border-color: #6e6e6e #ffffff #ffffff #6e6e6e;
+  background: linear-gradient(180deg, #000030, #000000);
+  color: #ffffff;
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: bold;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+.ns-star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #fff;
+  animation: ns-twinkle 2.4s infinite;
+}
+.ns-star.s1 { top: 18%; left: 22%; animation-delay: 0s; }
+.ns-star.s2 { top: 62%; left: 70%; animation-delay: 0.8s; }
+.ns-star.s3 { top: 38%; left: 48%; animation-delay: 1.6s; }
+@keyframes ns-twinkle {
+  0%, 100% { opacity: 0.2; }
+  50%      { opacity: 1; }
+}
+
+.ns-locrow, .ns-dirrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  border-bottom: 1px solid #808080;
+  overflow: hidden;
+}
+.ns-loclabel { font-size: 14px; }
+.ns-location {
+  flex: 1;
+  font-family: 'Fixedsys', monospace;
+  font-size: 14px;
+  color: #000;
+  background: #ffffff;
+  border: 2px solid;
+  border-color: #6e6e6e #ffffff #ffffff #6e6e6e;
+  padding: 1px 4px;
+  outline: none;
+  min-width: 0;
+}
+.ns-dirbtn {
+  font-family: 'Fixedsys', monospace;
+  font-size: 12px;
+  color: #000;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #ffffff #6e6e6e #6e6e6e #ffffff;
+  padding: 1px 8px 2px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ns-dirbtn:active { border-color: #6e6e6e #ffffff #ffffff #6e6e6e; }
+
+/* ── the page itself: default 1996 rendering, bitmap face ── */
+.ns-content {
+  flex: 1;
+  overflow-y: auto;
+  background: #c0c0c0;
+  padding: 10px 16px;
+  font-family: 'Fixedsys', monospace;
+  font-size: 16px;
+  line-height: 1.3;
+}
+.ns-content h1 { font-size: 26px; margin: 8px 0; font-weight: normal; }
+.ns-content h2 { font-size: 21px; margin: 14px 0 4px; font-weight: normal; }
+.ns-content h3 { font-size: 17px; margin: 12px 0 4px; }
+.ns-content p  { margin: 8px 0; }
+.ns-content ul { margin: 8px 0 8px 26px; }
+.ns-content li { margin: 3px 0; }
+.ns-content hr {
+  border: none;
+  border-top: 1px solid #808080;
+  border-bottom: 1px solid #ffffff;
+  margin: 10px 0;
+}
+.ns-content a { color: #0000ee; text-decoration: underline; }
+.ns-content a:visited { color: #551a8b; }
+.ns-content a:active { color: #ee0000; }
+.ns-badges, .ns-footer { font-size: 13px; }
+.ns-content::-webkit-scrollbar { width: 16px; }
+.ns-content::-webkit-scrollbar-track { background: #a8a8a8; }
+.ns-content::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #ffffff #6e6e6e #6e6e6e #ffffff;
+}
+
+/* ── status bar ── */
+.ns-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 6px;
+  border-top: 1px solid #ffffff;
+  font-size: 13px;
+}
+.ns-key { color: #6a5a10; font-size: 14px; }
+.ns-progress {
+  width: 110px;
+  height: 12px;
+  flex: none;
+  background: #a0a0a0;
+  border: 2px solid;
+  border-color: #6e6e6e #ffffff #ffffff #6e6e6e;
+  overflow: hidden;
+}
+.ns-progress-fill {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: #000080;
+  transition: width 0.3s;
+}
+.ns-status-text {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ── Motif dialog ── */
+.motif-dialog {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9998;
+  min-width: 280px;
+  background: #c0c0c0;
+  color: #000;
+  border: 2px solid;
+  border-color: #ffffff #6e6e6e #6e6e6e #ffffff;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.4);
+  font-size: 14px;
+  cursor: default;
+}
+.motif-dialog-title {
+  background: #008080;
+  color: #ffffff;
+  padding: 3px 8px;
+}
+.motif-dialog-body { padding: 14px 16px; }
+.motif-dialog-btns { display: flex; justify-content: center; padding: 0 0 10px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ns-star { animation: none; opacity: 0.6; }
+  .ns-progress-fill { transition: none; }
+  .xclock-sec { display: none; }
+}
+
+/* ── period page furniture ── */
+.twm-resize { cursor: nwse-resize; }
+
+.ns-table {
+  border-collapse: collapse;
+  margin: 8px 0;
+  border: 2px outset #e8e8e8;
+}
+.ns-table td {
+  border: 1px solid #808080;
+  padding: 4px 10px;
+  vertical-align: top;
+}
+
+.ns-blink {
+  color: #cc0000;
+  animation: ns-blink 1.06s steps(1) infinite;
+}
+@keyframes ns-blink {
+  50% { opacity: 0; }
+}
+
+.ns-construction {
+  display: inline-block;
+  margin: 8px 0;
+  text-align: center;
+}
+.ns-construction::before,
+.ns-construction::after {
+  content: "";
+  display: block;
+  height: 10px;
+  border: 1px solid #000;
+  background: repeating-linear-gradient(45deg, #f2d000 0 12px, #111 12px 24px);
+}
+.ns-construction b {
+  display: block;
+  padding: 2px 14px;
+}
+
+.ns-counter {
+  display: inline-flex;
+  background: #000;
+  border: 2px solid;
+  border-color: #6e6e6e #ffffff #ffffff #6e6e6e;
+}
+.ns-counter span {
+  color: #30ff30;
+  font-size: 19px;
+  padding: 1px 5px;
+  border-left: 1px solid #303030;
+}
+.ns-counter span:first-child { border-left: none; }
+
+.ns-badge {
+  display: inline-block;
+  margin: 3px 3px 0 0;
+  padding: 2px 9px 3px;
+  font-size: 12px;
+  color: #000;
+  background: #d4d4d4;
+  border: 1px solid #000;
+  box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #808080;
+}
+.ns-badge-n { background: #000080; color: #fff; box-shadow: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ns-blink { animation: none; }
+}
+
+/* ── xeyes ── */
+.xeyes {
+  flex: 1;
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  align-items: stretch;
+  justify-content: center;
+  background: #c0c0c0;
+  min-width: 0;
+}
+.xeye {
+  flex: 1;
+  max-width: 46%;
+  min-width: 0;
+  height: 100%;
+  display: block;
+}
+.xeye-pupil { fill: #000; }

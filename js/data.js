@@ -50,6 +50,7 @@ export async function loadData() {
     "logout", "vim", "vi", "emacs", "nano", "sudo", "su", "cd", "rm", "docker",
     "kubectl", "git", "alias", "ps", "free", "df", "yes", "who", "kill",
     "killall", "passwd", "chmod", "chown", "telnet", "dmesg", "resume",
+    "startx", "xinit", "twm", "netscape", "xeyes", "xclock",
     ...state.EXP_KEYS.map(k => "experience " + k),
     ...state.THEME_NAMES.map(t => "theme " + t),
   ];

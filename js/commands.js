@@ -8,7 +8,7 @@ import { state } from "./state.js";
 import {
   runBtop, runDoom, runLs, runShutdown, runSL, runCmatrix, runTraceroute, runPing,
   runNeofetch, runGrep, runDockerPs, runKubectlPods, runGitLog, showCatPicture, runCowsay,
-  runDmesg, probeEnvironment, runResume, buildResume,
+  runDmesg, probeEnvironment, runResume, buildResume, runStartx,
 } from "./easter-eggs/index.js";
 import { hasPipe, runPipeline } from "./pipeline.js";
 import { figletText } from "./figlet.js";
@@ -361,6 +361,20 @@ export function runCommand(raw) {
     runCmatrix();
   } else if (cmd === "dmesg" || cmd === "dmesg -h" || cmd === "dmesg --human") {
     runDmesg();
+  } else if (cmd === "startx" || cmd === "xinit") {
+    runStartx();
+  } else if (cmd === "twm") {
+    addLine("  twm: unable to open display \"\"", "line-highlight", true);
+    addLine("  (try 'startx')", "line-comment", true);
+    addLine("", null, false);
+  } else if (cmd === "dwm" || cmd === "i3" || cmd === "uwm") {
+    addLine(`  ${escapeHTML(cmd)}: command not found`, "line-highlight", true);
+    addLine("  (this is a twm household. try 'startx')", "line-comment", true);
+    addLine("", null, false);
+  } else if (cmd === "netscape" || cmd === "mosaic" || cmd === "surf" || cmd === "xeyes" || cmd === "xclock" || cmd === "xterm") {
+    addLine(`  ${escapeHTML(cmd)}: cannot open display :0`, "line-highlight", true);
+    addLine("  (graphical programs need X running. try 'startx')", "line-comment", true);
+    addLine("", null, false);
   } else if (cmd === "history") {
     state.history.slice().reverse().forEach((h, i) => {
       addLine(`  ${pad(i + 1, 4)}  ${escapeHTML(h)}`, null, true);

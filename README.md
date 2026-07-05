@@ -104,6 +104,7 @@ Original site code is 2-clause BSD. See [LICENSE.txt](LICENSE.txt) for the full 
 ### Third-party components
 
 - **[Fira Code](https://github.com/tonsky/FiraCode)** -- SIL Open Font License 1.1 (self-hosted in `fonts/`)
+- **[Fixedsys Excelsior](https://github.com/kika/fixedsys)** -- public domain (self-hosted in `fonts/`, used by the `startx` easter egg)
 - **[js-dos](https://js-dos.com/)** -- GPL v2 (loaded at runtime from CDN)
 - **[DOSBox](https://www.dosbox.com/)** -- GPL v2 (bundled inside `assets/doom.jsdos`)
 - **DOOM shareware WAD** -- freely distributable shareware, (c) 1993 id Software (bundled inside `assets/doom.jsdos`)

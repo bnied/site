@@ -3,6 +3,8 @@
 // All time-dependent functions receive `now` (Date) and other env values as
 // explicit parameters so they can be tested deterministically and later piped.
 
+import { IDENTITY, plainText } from "./sections-model.js";
+
 // ---------------------------------------------------------------------------
 // Simple one-liners
 // ---------------------------------------------------------------------------
@@ -277,8 +279,8 @@ export function yesText(args) {
  */
 export function resumeText(sections, experienceDetail, expKeys, now) {
   const lines = [
-    "BENJAMIN NIED",
-    "Site Reliability Engineer",
+    IDENTITY.name.toUpperCase(),
+    IDENTITY.title,
     `Generated from bnied.dev on ${now.toISOString().slice(0, 10)}`,
     "",
   ];
@@ -295,9 +297,7 @@ export function resumeText(sections, experienceDetail, expKeys, now) {
     if (!block) continue;
     for (const l of block) {
       if (dropComments && l.cls === "line-comment") continue;
-      const plain = l.text
-        .replace(/<[^>]*>/g, "")
-        .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+      const plain = plainText(l.text);
       lines.push(l.cls === "line-bullet" ? "  - " + plain : plain);
     }
   }

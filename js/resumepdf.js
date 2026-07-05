@@ -1,4 +1,5 @@
 // resumepdf.js — dependency-free PDF resume generator. Pure: no DOM.
+import { IDENTITY, DATES_RE, entries } from "./sections-model.js";
 //
 // resumeModel() distills the site's section JSON (the same data the terminal
 // renders) into a flat list of layout items, re-flowing the terminal's
@@ -88,42 +89,11 @@ export function wrapText(s, bold, size, maxW) {
 // Model: site JSON -> layout items
 // ---------------------------------------------------------------------------
 
-function plainText(t) {
-  return t
-    .replace(/<[^>]*>/g, "")
-    .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
-}
-
-// Flatten a section block: strip HTML, drop separators/blanks, and merge the
-// terminal's hard-wrapped continuation lines back into their parent entry.
-function entries(block) {
-  const out = [];
-  for (const l of block || []) {
-    const cls = l.cls || null;
-    const raw = plainText(l.text);
-    if (!raw.trim() || cls === "line-separator") continue;
-    const text = raw.trim().replace(/\s+/g, " ");
-    const prev = out[out.length - 1];
-    const isContinuation =
-      prev &&
-      ((!cls && (prev.cls === "line-bullet" || prev.cls === null)) ||
-        (cls === "line-comment" && prev.cls === "line-comment"));
-    if (isContinuation) {
-      prev.text += " " + text;
-    } else {
-      out.push({ cls, text });
-    }
-  }
-  return out;
-}
-
-const DATES_RE = /^(.*?)\s+(\d{4}\s*-\s*(?:Present|\d{4}))$/;
-
 export function resumeModel(sections, experienceDetail, expKeys) {
   const items = [];
 
-  items.push({ t: "name", s: "BENJAMIN NIED" });
-  items.push({ t: "title", s: "Site Reliability Engineer" });
+  items.push({ t: "name", s: IDENTITY.name.toUpperCase() });
+  items.push({ t: "title", s: IDENTITY.title });
   const bits = [];
   for (const e of entries(sections.contact)) {
     const m = e.text.match(/^(email|codeberg|github|linkedin)\s+(.+)$/i);
@@ -327,7 +297,7 @@ export function resumePdf(sections, experienceDetail, expKeys, dateStr) {
 
   const total = pages.length;
   pages.forEach((pageOps, i) => {
-    const left = `Benjamin Nied — generated from bnied.dev, ${dateStr}`;
+    const left = `${IDENTITY.name} — generated from bnied.dev, ${dateStr}`;
     const right = `${i + 1}/${total}`;
     const rw = textWidth(right, false, 7.5);
     pageOps.push(`${SOFT} g BT /F1 7.5 Tf ${MARGIN} 40 Td (${pdfEscape(left)}) Tj ET`);

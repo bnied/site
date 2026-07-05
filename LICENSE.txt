@@ -51,3 +51,7 @@ which remain under their original licenses:
    The game data files are NOT open source. The shareware version
    may be freely copied and distributed for personal use.
    https://www.doomworld.com/
+
+5. Fixedsys Excelsior (fonts/Fixedsys500c.*)
+   Public domain bitmap-style font, used by the startx easter egg.
+   https://github.com/kika/fixedsys
