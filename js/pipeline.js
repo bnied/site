@@ -7,7 +7,7 @@ import { figletText } from "./figlet.js";
 import { cowsayText } from "./cowsay.js";
 import {
   unameText, whoamiText, pwdText, hostnameText, dateText, uptimeText, lsText, neofetchText,
-  psText, freeText, dfText, yesText,
+  psText, freeText, dfText, yesText, dmesgText,
 } from "./textsources.js";
 
 export function hasPipe(raw) {
@@ -79,6 +79,9 @@ const PIPEABLE = {
   },
   yes(input, args) {
     return yesText(args);
+  },
+  dmesg(input, args, ctx) {
+    return dmesgText(ctx.env);
   },
 };
 

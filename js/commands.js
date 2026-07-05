@@ -8,6 +8,7 @@ import { state } from "./state.js";
 import {
   runBtop, runDoom, runLs, runShutdown, runSL, runCmatrix, runTraceroute, runPing,
   runNeofetch, runGrep, runDockerPs, runKubectlPods, runGitLog, showCatPicture, runCowsay,
+  runDmesg, probeEnvironment,
 } from "./easter-eggs/index.js";
 import { hasPipe, runPipeline } from "./pipeline.js";
 import { figletText } from "./figlet.js";
@@ -32,6 +33,7 @@ function pipelineCtx() {
     neofetchAscii: state.DATA.neofetch || [],
     neofetchInfo: state.DATA.neofetchInfo || [],
     processes: state.DATA.btopProcesses || [],
+    env: probeEnvironment(),
   };
 }
 
@@ -350,6 +352,8 @@ export function runCommand(raw) {
     runNeofetch();
   } else if (cmd === "cmatrix") {
     runCmatrix();
+  } else if (cmd === "dmesg" || cmd === "dmesg -h" || cmd === "dmesg --human") {
+    runDmesg();
   } else if (cmd === "history") {
     state.history.slice().reverse().forEach((h, i) => {
       addLine(`  ${pad(i + 1, 4)}  ${escapeHTML(h)}`, null, true);

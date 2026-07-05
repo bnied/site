@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   unameText, whoamiText, pwdText, hostnameText, dateText, uptimeText,
   lsRows, lsText, neofetchText, psText, freeText, dfText, yesText,
+  parseBrowser, parseOS, dmesgText,
 } from "../js/textsources.js";
 
 // Fixed reference time for deterministic assertions.
@@ -103,4 +104,53 @@ test("yesText repeats the word a finite number of times and ends with ^C", () =>
   assert.equal(custom[0], "no");
   // finite: bounded well under any runaway length
   assert.ok(custom.length < 30);
+});
+
+test("parseBrowser identifies engines in the right precedence order", () => {
+  const chrome = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
+  assert.deepEqual(parseBrowser(chrome), { name: "Chrome", version: "126" });
+  const edge = chrome + " Edg/126.0.2592.87";
+  assert.deepEqual(parseBrowser(edge), { name: "Edge", version: "126" });
+  const firefox = "Mozilla/5.0 (X11; Linux x86_64; rv:127.0) Gecko/20100101 Firefox/127.0";
+  assert.deepEqual(parseBrowser(firefox), { name: "Firefox", version: "127" });
+  const safari = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15";
+  assert.deepEqual(parseBrowser(safari), { name: "Safari", version: "17" });
+  assert.equal(parseBrowser("curl/8.6.0").name, "Unknown");
+});
+
+test("parseOS identifies platforms, iOS before macOS", () => {
+  assert.equal(parseOS("Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X)"), "iOS");
+  assert.equal(parseOS("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"), "macOS");
+  assert.equal(parseOS("Mozilla/5.0 (Windows NT 10.0; Win64; x64)"), "Windows");
+  assert.equal(parseOS("Mozilla/5.0 (X11; Linux x86_64)"), "Linux");
+});
+
+test("dmesgText renders deterministic kernel-log lines from env", () => {
+  const env = {
+    browser: { name: "Firefox", version: "127" },
+    os: "Linux",
+    cores: 8,
+    memoryGB: 8,
+    gpu: "ANGLE (Apple M3)",
+    screenW: 3024, screenH: 1964, dpr: 2, colorDepth: 30,
+    viewportW: 1512, viewportH: 823,
+    locale: "en-US", timezone: "America/New_York",
+    dark: true, reducedMotion: false,
+    online: true, touchPoints: 0, connection: "4g",
+    uptimeSec: 42.7,
+  };
+  const lines = dmesgText(env);
+  assert.ok(lines.every(l => /^\[ *[\d.]+\] /.test(l)));
+  assert.ok(lines[0].includes("Firefox 127"));
+  const joined = lines.join("\n");
+  assert.ok(joined.includes("8 CPUs"));
+  assert.ok(joined.includes("ANGLE (Apple M3)"));
+  assert.ok(joined.includes("3024x1964"));
+  assert.ok(joined.includes("prefers-color-scheme=dark"));
+  assert.ok(joined.includes("up 42s"));
+  // deterministic: same env, same output
+  assert.deepEqual(dmesgText(env), lines);
+  // graceful when the browser withholds data
+  const shy = { ...env, cores: undefined, memoryGB: undefined, gpu: null, connection: null };
+  assert.ok(dmesgText(shy).join("\n").includes("browser is shy"));
 });

@@ -260,6 +260,107 @@ export function yesText(args) {
 }
 
 // ---------------------------------------------------------------------------
+// dmesg
+// ---------------------------------------------------------------------------
+
+/**
+ * Identify browser name/version from a user-agent string.
+ * Order matters: Edge and Opera embed "Chrome/", Chrome embeds "Safari/".
+ *
+ * @param {string} ua
+ * @returns {{ name: string, version: string }}
+ */
+export function parseBrowser(ua) {
+  const rules = [
+    { name: "Edge",    re: /Edg\/([\d.]+)/ },
+    { name: "Opera",   re: /OPR\/([\d.]+)/ },
+    { name: "Firefox", re: /Firefox\/([\d.]+)/ },
+    { name: "Chrome",  re: /Chrome\/([\d.]+)/ },
+    { name: "Safari",  re: /Version\/([\d.]+).*Safari/ },
+  ];
+  for (const { name, re } of rules) {
+    const m = ua.match(re);
+    if (m) return { name, version: m[1].split(".")[0] };
+  }
+  return { name: "Unknown", version: "?" };
+}
+
+/**
+ * Identify the host OS from a user-agent string.
+ *
+ * @param {string} ua
+ * @returns {string}
+ */
+export function parseOS(ua) {
+  if (/iPhone|iPad/.test(ua)) return "iOS";
+  if (/Android/.test(ua)) return "Android";
+  if (/Mac OS X/.test(ua)) return "macOS";
+  if (/Windows/.test(ua)) return "Windows";
+  if (/CrOS/.test(ua)) return "ChromeOS";
+  if (/Linux/.test(ua)) return "Linux";
+  return "an unidentified OS";
+}
+
+/**
+ * Render a kernel-boot-log view of the REAL environment the page runs in.
+ * Pure: all probed values arrive via `env`; timestamps are deterministic.
+ *
+ * @param {{
+ *   browser:       { name: string, version: string },
+ *   os:            string,
+ *   cores:         number | undefined,
+ *   memoryGB:      number | undefined,
+ *   gpu:           string | null,
+ *   screenW:       number, screenH: number,
+ *   dpr:           number,
+ *   colorDepth:    number,
+ *   viewportW:     number, viewportH: number,
+ *   locale:        string,
+ *   timezone:      string,
+ *   dark:          boolean,
+ *   reducedMotion: boolean,
+ *   online:        boolean,
+ *   touchPoints:   number,
+ *   connection:    string | null,
+ *   uptimeSec:     number,
+ * }} env
+ * @returns {string[]}
+ */
+export function dmesgText(env) {
+  const lines = [];
+  let i = 0;
+  function push(msg) {
+    const t = Math.pow(i, 2.3) * 0.000987;
+    lines.push(`[${t.toFixed(6).padStart(12)}] ${msg}`);
+    i++;
+  }
+
+  push(`SPACEDUCK/Linux version 1.0.0-spaceduck (visitor@bnied.dev) (${env.browser.name} ${env.browser.version})`);
+  push("Command line: BOOT_IMAGE=/boot/bnied.dev root=/dev/duck0 ro quiet splash");
+  push(`Booting on ${env.os} — yes, this is really your machine`);
+  push(env.cores
+    ? `smp: Brought up 1 node, ${env.cores} CPUs (JavaScript will use one of them)`
+    : "smp: CPU count undisclosed (browser is shy)");
+  push(env.memoryGB
+    ? `Memory: ~${env.memoryGB}G available to this tab (allegedly)`
+    : "Memory: amount undisclosed (browser is shy)");
+  push(env.gpu
+    ? `fb0: ${env.gpu}`
+    : "fb0: generic framebuffer (GPU identity withheld)");
+  push(`Console: ${env.screenW}x${env.screenH} physical @${env.dpr}x, ${env.colorDepth}-bit color`);
+  push(`Virtual console: ${env.viewportW}x${env.viewportH} viewport`);
+  push(`Locale: ${env.locale}, TZ ${env.timezone}`);
+  push(`backlight: prefers-color-scheme=${env.dark ? "dark" : "light"}, prefers-reduced-motion=${env.reducedMotion ? "reduce" : "no-preference"}`);
+  push(env.touchPoints > 0
+    ? `input: touchscreen detected (${env.touchPoints} touch points)`
+    : "input: no touchscreen — mouse and keyboard, as nature intended");
+  push(`duck0: link ${env.online ? "up" : "DOWN"}${env.connection ? ` (${env.connection})` : ""}, 1000 Mbps full duplex (unverified)`);
+  push(`dmesg: read complete. up ${Math.floor(env.uptimeSec)}s. all systems quacking.`);
+
+  return lines;
+}
+
+// ---------------------------------------------------------------------------
 // neofetch
 // ---------------------------------------------------------------------------
 
