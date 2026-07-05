@@ -13,6 +13,7 @@ Personal website with a CRT terminal aesthetic. Visitors interact via a command 
 | `projects` | Open-source projects |
 | `education` | Academic background |
 | `contact` | Email, GitHub, LinkedIn |
+| `resume` | Download a PDF resume, typeset client-side from live site data (no libraries; `cat resume.txt` for plain text) |
 | `theme <name>` | Switch color theme (green, amber, blue, high-contrast, colorblind) |
 | `figlet <text>` | Render big ASCII banner text |
 | `lolcat` | Rainbow-colorize output (best at the end of a pipe) |

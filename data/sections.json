@@ -111,7 +111,7 @@
     { "text": "  kernel-ml-aufs", "cls": "line-accent" },
     { "text": "  <a href=\"https://github.com/bnied/kernel-ml-aufs\">github.com/bnied/kernel-ml-aufs</a>", "cls": "line-link" },
     { "text": "  Mainline Linux kernel packages for RHEL/CentOS/OEL 7 & 8" },
-    { "text": "  AUFS storage driver for Docker." },
+    { "text": "  with AUFS storage-driver support for Docker." },
     { "text": "" },
     { "text": "  kernel-lt-aufs", "cls": "line-accent" },
     { "text": "  <a href=\"https://github.com/bnied/kernel-lt-aufs\">github.com/bnied/kernel-lt-aufs</a>", "cls": "line-link" },

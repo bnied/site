@@ -5,6 +5,36 @@ import { output } from "../dom.js";
 import { addLine, escapeHTML, pad, scrollToBottom } from "../render.js";
 import { state } from "../state.js";
 import { cowsayText } from "../cowsay.js";
+import { resumeText } from "../textsources.js";
+import { resumePdf } from "../resumepdf.js";
+
+export const RESUME_FILENAME = "Benjamin-Nied-Resume.pdf";
+
+export function buildResume() {
+  return resumeText(state.sections, state.experienceDetail, state.EXP_KEYS, new Date());
+}
+
+export function runResume() {
+  const pdf = resumePdf(
+    state.sections, state.experienceDetail, state.EXP_KEYS,
+    new Date().toISOString().slice(0, 10)
+  );
+  const bytes = Uint8Array.from(pdf, ch => ch.charCodeAt(0) & 0xff);
+  const blob = new Blob([bytes], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = RESUME_FILENAME;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+  addLine("  Typesetting resume from live site data...", "line-system", true);
+  addLine(`  Saved '${RESUME_FILENAME}' (${blob.size} bytes)`, "line-ok", true);
+  addLine("  (plain-text version: cat resume.txt)", "line-comment", true);
+  addLine("", null, false);
+}
 
 export function runNeofetch() {
   const uptimeMs = Date.now() - state.pageLoadTime;

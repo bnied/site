@@ -27,6 +27,7 @@ const PIPEABLE = {
   cat(input, args, ctx) {
     if (input) return input;
     const name = args.replace(/\.txt$/, "").trim();
+    if (name === "resume" && ctx.resumeLines) return ctx.resumeLines;
     const section = ctx.sections[name];
     if (!section) return [`cat: ${args}: No such file or directory`];
     return section.map(l => l.text);

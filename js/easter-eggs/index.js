@@ -18,4 +18,7 @@ export {
   runGitLog,
   showCatPicture,
   runCowsay,
+  runResume,
+  buildResume,
+  RESUME_FILENAME,
 } from "./misc.js";

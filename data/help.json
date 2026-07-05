@@ -11,6 +11,7 @@
   { "text": "  projects      open-source work", "cls": "line-highlight" },
   { "text": "  education     academic background", "cls": "line-highlight" },
   { "text": "  contact       reach me", "cls": "line-highlight" },
+  { "text": "  resume        download my resume (pdf)", "cls": "line-highlight" },
   { "text": "  figlet &lt;text&gt; big ascii banner", "cls": "line-highlight" },
   { "text": "  lolcat        rainbow-ify output", "cls": "line-highlight" },
   { "text": "  all           show everything", "cls": "line-highlight" },

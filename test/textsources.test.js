@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {
   unameText, whoamiText, pwdText, hostnameText, dateText, uptimeText,
   lsRows, lsText, neofetchText, psText, freeText, dfText, yesText,
-  parseBrowser, parseOS, dmesgText,
+  parseBrowser, parseOS, dmesgText, resumeText,
 } from "../js/textsources.js";
 
 // Fixed reference time for deterministic assertions.
@@ -153,4 +153,29 @@ test("dmesgText renders deterministic kernel-log lines from env", () => {
   // graceful when the browser withholds data
   const shy = { ...env, cores: undefined, memoryGB: undefined, gpu: null, connection: null };
   assert.ok(dmesgText(shy).join("\n").includes("browser is shy"));
+});
+
+test("resumeText builds a plain-text resume from section data", () => {
+  const sections = {
+    about: [{ text: "  ABOUT", cls: "line-heading" }, { text: "  An engineer." }],
+    contact: [{ text: "  email  <a href=\"mailto:x@y.z\">x@y.z</a>", cls: "line-link" }],
+    skills: [{ text: "Kubernetes", cls: "line-bullet" }],
+    experience: [
+      { text: "  APPLE", cls: "line-accent" },
+      { text: "  For details, run:  experience &lt;role&gt;", cls: "line-comment" },
+    ],
+    projects: [{ text: "  neofsn", cls: "line-accent" }],
+    education: [{ text: "  Coursework: theory", cls: "line-comment" }],
+  };
+  const detail = { apple: [{ text: "Did the thing &amp; more", cls: "line-bullet" }] };
+  const lines = resumeText(sections, detail, ["apple"], new Date("2026-07-04T12:00:00Z"));
+
+  assert.equal(lines[0], "BENJAMIN NIED");
+  assert.ok(lines[2].includes("2026-07-04"));
+  const joined = lines.join("\n");
+  assert.ok(joined.includes("  - Kubernetes"), "bullets get a dash prefix");
+  assert.ok(joined.includes("x@y.z") && !joined.includes("<a "), "HTML stripped");
+  assert.ok(joined.includes("Did the thing & more"), "entities decoded");
+  assert.ok(!joined.includes("For details"), "terminal hints dropped from overview");
+  assert.ok(joined.includes("Coursework: theory"), "education comments kept");
 });

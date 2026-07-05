@@ -8,7 +8,7 @@ import { state } from "./state.js";
 import {
   runBtop, runDoom, runLs, runShutdown, runSL, runCmatrix, runTraceroute, runPing,
   runNeofetch, runGrep, runDockerPs, runKubectlPods, runGitLog, showCatPicture, runCowsay,
-  runDmesg, probeEnvironment,
+  runDmesg, probeEnvironment, runResume, buildResume,
 } from "./easter-eggs/index.js";
 import { hasPipe, runPipeline } from "./pipeline.js";
 import { figletText } from "./figlet.js";
@@ -34,6 +34,7 @@ function pipelineCtx() {
     neofetchInfo: state.DATA.neofetchInfo || [],
     processes: state.DATA.btopProcesses || [],
     env: probeEnvironment(),
+    resumeLines: buildResume(),
   };
 }
 
@@ -168,6 +169,12 @@ export function runCommand(raw) {
       addLine("  cat: missing operand", "line-highlight", true);
     } else if (file === "pictures" || file === "picture") {
       showCatPicture();
+    } else if (sectionName === "resume") {
+      buildResume().forEach(l => addLine("  " + escapeHTML(l), null, true));
+    } else if (file === "resume.pdf") {
+      addLine("  %PDF-1.4 ÆØ▓░█▄▀▛▒▓ ...", "line-comment", true);
+      addLine("  cat: resume.pdf is a binary file", "line-highlight", true);
+      addLine("  (run 'resume' to download it, or 'cat resume.txt' for plain text)", "line-comment", true);
     } else if (state.sections[sectionName]) {
       addLines(state.sections[sectionName]);
     } else if (file === ".secrets") {
@@ -365,6 +372,10 @@ export function runCommand(raw) {
     addLine("  Usage: grep &lt;pattern&gt;", "line-highlight", true);
     addLine("  Searches resume content for matching text", "line-comment", true);
     addLine("", null, false);
+  } else if (cmd === "resume" || cmd === "resume.pdf" || cmd === "cv") {
+    runResume();
+  } else if (cmd === "wget resume" || cmd === "wget resume.pdf" || cmd === "curl -o resume.pdf" || cmd === "curl resume") {
+    runResume();
   } else if (cmd.startsWith("wget ")) {
     addLine(`  --${new Date().toISOString()}--`, "line-system", true);
     addLine(`  Resolving ${escapeHTML(cmd.slice(5).trim())}... failed: Name or service not known.`, "line-highlight", true);

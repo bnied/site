@@ -100,6 +100,8 @@ export function lsRows(args) {
     { name: "skills.txt",      size: 3072, mtime: "Apr 10  2026", kind: "file" },
     { name: "projects.txt",    size: 2560, mtime: "Apr 13  2026", kind: "file" },
     { name: "education.txt",   size:  512, mtime: "Apr 10  2026", kind: "file" },
+    { name: "resume.txt",      size: 8192, mtime: "Jul  4  2026", kind: "file" },
+    { name: "resume.pdf",      size: 24576, mtime: "Jul  4  2026", kind: "file" },
   ];
 
   const hidden = [
@@ -256,6 +258,53 @@ export function yesText(args) {
   const lines = Array(YES_LINES).fill(word);
   lines.push("^C");
   lines.push("(that could have gone on forever — you're welcome)");
+  return lines;
+}
+
+// ---------------------------------------------------------------------------
+// resume
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a plain-text resume from the site's own section data, so the
+ * downloadable resume can never drift out of sync with the site.
+ *
+ * @param {Record<string, { text: string, cls?: string }[]>} sections
+ * @param {Record<string, { text: string, cls?: string }[]>} experienceDetail
+ * @param {string[]} expKeys
+ * @param {Date}     now
+ * @returns {string[]}
+ */
+export function resumeText(sections, experienceDetail, expKeys, now) {
+  const lines = [
+    "BENJAMIN NIED",
+    "Site Reliability Engineer",
+    `Generated from bnied.dev on ${now.toISOString().slice(0, 10)}`,
+    "",
+  ];
+
+  const blocks = [
+    { block: sections.about }, { block: sections.contact }, { block: sections.skills },
+    // the overview's line-comment tail is terminal usage hints — not resume content
+    { block: sections.experience, dropComments: true },
+    ...expKeys.map(k => ({ block: experienceDetail[k] })),
+    { block: sections.projects }, { block: sections.education },
+  ];
+
+  for (const { block, dropComments } of blocks) {
+    if (!block) continue;
+    for (const l of block) {
+      if (dropComments && l.cls === "line-comment") continue;
+      const plain = l.text
+        .replace(/<[^>]*>/g, "")
+        .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+      lines.push(l.cls === "line-bullet" ? "  - " + plain : plain);
+    }
+  }
+
+  // trim trailing blank lines, keep exactly one
+  while (lines.length && lines[lines.length - 1] === "") lines.pop();
+  lines.push("");
   return lines;
 }
 
