@@ -99,3 +99,12 @@ test("system commands are pipeable sources that ignore stdin", () => {
   // ignores stdin in filter position:
   assert.equal(runPipeline("echo x | whoami", richCtx).lines[0], "visitor");
 });
+
+test("ps, free, df, and yes are pipeable sources", () => {
+  const psCtx = { ...richCtx, processes: [{ pid: 1, user: "root", cpu: 0, mem: 0.3, cmd: "systemd" }] };
+  assert.ok(runPipeline("ps", psCtx).lines[0].includes("PID"));
+  assert.ok(runPipeline("free | lolcat", psCtx).colorize);
+  assert.ok(runPipeline("df", psCtx).lines[0].startsWith("Filesystem"));
+  const yes = runPipeline("yes duck | cowsay", psCtx);
+  assert.ok(yes.lines.some(l => l.includes("duck")));
+});

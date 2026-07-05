@@ -47,8 +47,9 @@ export async function loadData() {
     "pwd", "hostname", "date", "uptime", "history", "doom", "btop", "top",
     "htop", "sl", "cmatrix", "traceroute", "ping", "grep", "man", "ssh",
     "curl", "make", "wget", "reboot", "shutdown", "poweroff", "halt", "exit",
-    "logout", "vim", "vi", "emacs", "nano", "sudo", "cd", "rm", "docker",
-    "kubectl", "git", "alias",
+    "logout", "vim", "vi", "emacs", "nano", "sudo", "su", "cd", "rm", "docker",
+    "kubectl", "git", "alias", "ps", "free", "df", "yes", "who", "kill",
+    "killall", "passwd", "chmod", "chown", "telnet",
     ...state.EXP_KEYS.map(k => "experience " + k),
     ...state.THEME_NAMES.map(t => "theme " + t),
   ];
