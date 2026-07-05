@@ -7,6 +7,7 @@ export { runLs } from "./ls.js";
 export { runShutdown } from "./shutdown.js";
 export { runSL } from "./sl.js";
 export { runCmatrix } from "./cmatrix.js";
+export { runDmesg, probeEnvironment } from "./dmesg.js";
 export { runTraceroute } from "./traceroute.js";
 export { runPing } from "./ping.js";
 export {

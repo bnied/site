@@ -142,6 +142,8 @@
     { "text": "" },
     { "text": "  Fairleigh Dickinson University          2005 - 2007", "cls": "line-accent" },
     { "text": "  B.S. in Computer Science" },
+    { "text": "  Coursework: high-level mathematics, programming (C++, C#,", "cls": "line-comment" },
+    { "text": "  Assembly, Java), computing theory, and networking", "cls": "line-comment" },
     { "text": "" },
     { "text": "  Sussex County Community College         2003 - 2005", "cls": "line-accent" },
     { "text": "  A.S. in Computer Science" },

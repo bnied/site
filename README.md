@@ -35,7 +35,7 @@ cat about | cowsay
 neofetch | lolcat
 ```
 
-Pipeable commands: `echo`, `fortune`, `cat <section>`, `figlet`, `cowsay`, `lolcat`, `neofetch`, `ls`, `uname`, `whoami`, `pwd`, `hostname`, `date`, `uptime`, `ps`, `free`, `df`, `yes`.
+Pipeable commands: `echo`, `fortune`, `cat <section>`, `figlet`, `cowsay`, `lolcat`, `neofetch`, `ls`, `uname`, `whoami`, `pwd`, `hostname`, `date`, `uptime`, `ps`, `free`, `df`, `yes`, `dmesg`.
 
 ## CRT effects
 
