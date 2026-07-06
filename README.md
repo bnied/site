@@ -54,7 +54,7 @@ boot sequence collapses to near-instant.
 
 - Vanilla HTML, CSS, JavaScript -- no frameworks, no build step
 - [Fira Code](https://github.com/tonsky/FiraCode) font
-- [js-dos](https://js-dos.com/) for DOOM (loaded on demand)
+- [js-dos](https://js-dos.com/) for DOOM (self-hosted in `vendor/js-dos/`, loaded on demand)
 - Content stored in `data/*.json`, logic split across ES modules in `js/`
 
 ## Structure
@@ -79,6 +79,8 @@ boot sequence collapses to near-instant.
 │   └── figlet-font.json     # block font for figlet
 ├── assets/
 │   └── doom.jsdos           # DOOM shareware bundle
+├── vendor/
+│   └── js-dos/              # self-hosted js-dos emulator (GPL-2.0)
 └── img/                     # favicon variants
 ```
 
@@ -105,6 +107,6 @@ Original site code is 2-clause BSD. See [LICENSE.txt](LICENSE.txt) for the full 
 
 - **[Fira Code](https://github.com/tonsky/FiraCode)** -- SIL Open Font License 1.1 (self-hosted in `fonts/`)
 - **[Fixedsys Excelsior](https://github.com/kika/fixedsys)** -- public domain (self-hosted in `fonts/`, used by the `startx` easter egg)
-- **[js-dos](https://js-dos.com/)** -- GPL v2 (loaded at runtime from CDN)
+- **[js-dos](https://js-dos.com/)** -- GPL v2 (self-hosted in `vendor/js-dos/`, see its README for version and upgrade notes)
 - **[DOSBox](https://www.dosbox.com/)** -- GPL v2 (bundled inside `assets/doom.jsdos`)
 - **DOOM shareware WAD** -- freely distributable shareware, (c) 1993 id Software (bundled inside `assets/doom.jsdos`)
