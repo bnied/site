@@ -330,7 +330,7 @@ function launchX() {
               <span class="ns-locicon"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="6" width="7" height="4" rx="2" fill="none" stroke="#333" stroke-width="1.5"/><rect x="7.5" y="6" width="7" height="4" rx="2" fill="none" stroke="#333" stroke-width="1.5"/></svg></span>
               <span class="ns-loclabel">Location:</span>
               <span class="ns-combo">
-                <input class="ns-location" type="text" readonly value="http://bnied.dev/index.html">
+                <input class="ns-location" type="text" value="http://bnied.dev/index.html" spellcheck="false">
                 <button class="ns-combo-arrow" data-act="urllist" title="Visited locations">&#9660;</button>
               </span>
             </div>
@@ -365,6 +365,7 @@ function launchX() {
     title: nsWin.el.querySelector(".twm-title"),
     content: nsWin.el.querySelector(".ns-content"),
     location: nsWin.el.querySelector(".ns-location"),
+    loclabel: nsWin.el.querySelector(".ns-loclabel"),
     statusText: nsWin.el.querySelector(".ns-status-text"),
     progressFill: nsWin.el.querySelector(".ns-progress-fill"),
     throbber: nsWin.el.querySelector(".ns-throbber"),
@@ -414,6 +415,7 @@ function launchX() {
     });
     el.content.scrollTop = 0;
     el.location.value = page.url;
+    el.loclabel.textContent = "Location:";
     el.title.textContent = `Netscape: ${page.title}`;
 
     clearTimeout(progressTimer);
@@ -525,15 +527,7 @@ function launchX() {
     const go = () => {
       const raw = input.value;
       dlg.remove();
-      const key = resolveLocation(raw);
-      if (key === null) {
-        const host = raw.trim().replace(/^https?:\/\//, "").split("/")[0] || raw.trim();
-        showDialog("Netscape", `Netscape is unable to locate the server:\n&nbsp;&nbsp;${escHtml(host)}\nThe server does not have a DNS entry.`);
-      } else if (key.startsWith("404:")) {
-        showDialog("404 Not Found", `The requested URL /${escHtml(key.slice(4))} was not\nfound on this server.`);
-      } else {
-        navigate(key);
-      }
+      gotoLocation(raw);
     };
     dlg.querySelector(".ns-openloc-go").addEventListener("click", go);
     dlg.querySelector(".ns-openloc-cancel").addEventListener("click", () => dlg.remove());
@@ -544,6 +538,23 @@ function launchX() {
     });
     input.focus();
     input.setSelectionRange(input.value.length, input.value.length);
+  }
+
+  // Shared by the Open Location dialog and the location bar. Returns true if
+  // the URL resolved to a page, false if it ended in a period-correct dialog.
+  function gotoLocation(raw) {
+    const key = resolveLocation(raw);
+    if (key === null) {
+      const host = raw.trim().replace(/^https?:\/\//, "").split("/")[0] || raw.trim();
+      showDialog("Netscape", `Netscape is unable to locate the server:\n&nbsp;&nbsp;${escHtml(host)}\nThe server does not have a DNS entry.`);
+      return false;
+    }
+    if (key.startsWith("404:")) {
+      showDialog("404 Not Found", `The requested URL /${escHtml(key.slice(4))} was not\nfound on this server.`);
+      return false;
+    }
+    navigate(key);
+    return true;
   }
 
   function resolveLocation(raw) {
@@ -559,6 +570,33 @@ function launchX() {
     if (pages[path] && path !== "aboutns") return path;
     return "404:" + m[1];
   }
+
+  // ── editable location bar ──
+  // Netscape 3.x swapped "Location:" for "Go to:" while the URL was edited,
+  // flipping back once a page loaded (render() resets the label).
+  function resetLocation() {
+    const page = pages[history[historyPos]] || pages.home;
+    el.location.value = page.url;
+    el.loclabel.textContent = "Location:";
+  }
+  el.location.addEventListener("input", () => {
+    el.loclabel.textContent = "Go to:";
+  });
+  // keep clicks from reaching the terminal's click-to-focus handler
+  el.location.addEventListener("click", e => {
+    e.stopPropagation();
+    closeNsMenu();
+  });
+  el.location.addEventListener("blur", resetLocation);
+  el.location.addEventListener("keydown", e => {
+    e.stopPropagation();
+    if (e.key === "Enter") {
+      if (gotoLocation(el.location.value)) el.location.blur();
+    } else if (e.key === "Escape") {
+      resetLocation();
+      el.location.blur();
+    }
+  });
 
   let srcWin = null;
   function viewSource() {
@@ -856,6 +894,8 @@ function launchX() {
 
   function onKey(e) {
     if (e.key !== "Escape") return;
+    // editing the location bar: its own handler cancels the edit instead
+    if (e.target === el.location) return;
     e.preventDefault();
     e.stopPropagation();
     if (nsMenuEl) {
