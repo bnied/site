@@ -1,5 +1,5 @@
-// DOOM easter egg — lazy-loads the js-dos emulator from CDN and runs the
-// bundled DOOM shareware WAD. Press Esc twice to exit cleanly.
+// DOOM easter egg — lazy-loads the self-hosted js-dos emulator (vendor/js-dos)
+// and runs the bundled DOOM shareware WAD. Press Esc twice to exit cleanly.
 
 import { cmdInput } from "../dom.js";
 import { addLine, scrollToBottom } from "../render.js";
@@ -58,13 +58,13 @@ export function runDoom() {
 
   const jsdosCSS = document.createElement("link");
   jsdosCSS.rel = "stylesheet";
-  jsdosCSS.href = "https://v8.js-dos.com/latest/js-dos.css";
+  jsdosCSS.href = "vendor/js-dos/js-dos.css";
   document.head.appendChild(jsdosCSS);
 
   let dosInstance = null;
 
   const jsdosScript = document.createElement("script");
-  jsdosScript.src = "https://v8.js-dos.com/latest/js-dos.js";
+  jsdosScript.src = "vendor/js-dos/js-dos.js";
   jsdosScript.onload = () => {
     addLine("  Initializing emulator...", "line-system", true);
     scrollToBottom();
@@ -72,6 +72,7 @@ export function runDoom() {
     try {
       dosInstance = Dos(doomContainer, {
         url: "assets/doom.jsdos",
+        pathPrefix: "vendor/js-dos/emulators/",
         autoStart: true,
         noCloud: true,
         noNetworking: true,
