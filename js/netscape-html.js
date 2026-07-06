@@ -116,7 +116,7 @@ function contactHtml(sections) {
   return [
     "<h2>Contact Information</h2><hr>",
     `<table class="ns-table">${rows.join("")}</table>`,
-    "<p><i>PGP key available upon request. Finger me for my .plan.</i></p>",
+    "<p><i>This page is Y2K compliant.</i></p>",
   ].join("\n");
 }
 
@@ -152,6 +152,31 @@ function homeHtml() {
   ].join("\n");
 }
 
+// Help > About Netscape — the classic about: page, gently forged.
+function aboutNetscapeHtml() {
+  return [
+    "<center>",
+    "<h1>Netscape Navigator&trade;</h1>",
+    "<p><b>Version 3.04Gold (SPACEDUCK build)</b></p>",
+    "<p>Copyright &copy; 1994-1997 Netscape Communications Corporation, All rights reserved.</p>",
+    "</center>",
+    "<hr>",
+    '<table class="ns-about"><tr>',
+    '<td><div class="ns-nlogo"><span>N</span><b>NETSCAPE</b></div></td>',
+    "<td>",
+    '<p>This software is subject to the license agreement set forth in the <a href="#" data-page="home">license</a>. Please read and agree to all terms before using this software.</p>',
+    '<p>Report any problems through the <a href="#" data-page="contact">feedback page</a>.</p>',
+    "<p>Netscape Communications, Netscape, Netscape Navigator and the Netscape Communications logo are trademarks of Netscape Communications Corporation.</p>",
+    "</td></tr></table>",
+    "<hr>",
+    "<p>Contains no Java&trade;. This has only improved things.</p>",
+    "<p><b>This version supports International security with RSA Public Key Cryptography, MD2, MD5, RC2-CBC, RC4.</b></p>",
+    "<p>Contains SPACEDUCK&trade; terminal emulation technology. Quit X to return to the genuine article.</p>",
+    "<hr>",
+    '<p class="ns-fineprint">Any provision of this website to the U.S. Government is with "Restricted Rights" as follows: use, duplication or disclosure is subject to whatever you can grep out of the page source. Contractor/manufacturer is bnied, somewhere on the World Wide Web.</p>',
+  ].join("\n");
+}
+
 /**
  * Build every page of the graphical site.
  *
@@ -170,6 +195,7 @@ export function netscapePages(sections, experienceDetail, expKeys) {
     projects: { title: "Software Projects", url: "http://bnied.dev/projects.html", html: projectsHtml(sections) },
     education: { title: "Education", url: "http://bnied.dev/education.html", html: educationHtml(sections) },
     contact: { title: "Contact Information", url: "http://bnied.dev/contact.html", html: contactHtml(sections) },
+    aboutns: { title: "About Netscape", url: "about:", html: aboutNetscapeHtml() },
   };
 
   for (const [key, page] of Object.entries(pages)) {
