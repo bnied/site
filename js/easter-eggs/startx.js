@@ -1,8 +1,10 @@
 // startx easter egg — boots a fake X11 session running twm: floating
 // windows with teal focused titlebars, draggable/resizable/iconifiable,
-// a root menu on the desktop, an xclock, and a pre-4.0 Netscape Navigator
+// a root menu on the desktop, and a pre-4.0 Netscape Navigator
 // (Motif widgets, Helvetica chrome, bitmap page type) browsing a graphical
-// rendition of this site. The menu bar is fully wired: real Back/Forward
+// rendition of this site. xterm, xclock, and xeyes launch on demand from
+// the root menu (or from inside an xterm, which runs the site's commands
+// via js/xterm-shell.js). The Netscape menu bar is fully wired: real Back/Forward
 // history in Go, Options toggles that hide chrome rows, View > Document
 // Source, Open Location with fake DNS errors, and Help > About Netscape.
 // Esc or root menu > Exit quits back to the terminal.
@@ -12,6 +14,9 @@ import { cmdInput } from "../dom.js";
 import { addLine, scrollToBottom } from "../render.js";
 import { state } from "../state.js";
 import { netscapePages } from "../netscape-html.js";
+import { xtermRespond } from "../xterm-shell.js";
+import { probeEnvironment } from "./dmesg.js";
+import { buildResume } from "./misc.js";
 
 const REDUCED = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -213,33 +218,64 @@ function launchX() {
     focusWin(win);
   }
 
-  // ── xclock ──
+  function destroyWin(win) {
+    if (win.icon) {
+      win.icon.remove();
+      win.icon = null;
+    }
+    win.el.remove();
+    const i = windows.indexOf(win);
+    if (i !== -1) windows.splice(i, 1);
+  }
+
+  // Raise a window, resurrecting it if it was destroyed via Delete Window —
+  // the element and all its wiring survive detached in the closure.
+  function reopenWin(win) {
+    if (!windows.includes(win)) {
+      windows.push(win);
+      desktop.appendChild(win.el);
+    }
+    restore(win);
+  }
+
   const dw = desktop.clientWidth;
   const dh = desktop.clientHeight;
-  const clockWin = makeWindow({
-    name: "xclock",
-    title: "xclock",
-    x: Math.max(12, dw - 190),
-    y: 16,
-    w: 160,
-    h: 180,
-    minW: 110,
-    minH: 120,
-    contentHTML: `
-      <svg class="xclock-face" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="46" fill="#c0c0c0" stroke="#000"/>
-        ${Array.from({ length: 12 }, (_, i) => {
-          const a = (i * Math.PI) / 6;
-          const x1 = 50 + 41 * Math.sin(a), y1 = 50 - 41 * Math.cos(a);
-          const x2 = 50 + 45 * Math.sin(a), y2 = 50 - 45 * Math.cos(a);
-          return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#000" stroke-width="2"/>`;
-        }).join("")}
-        <line class="xclock-hour" x1="50" y1="50" x2="50" y2="28" stroke="#000" stroke-width="3"/>
-        <line class="xclock-min"  x1="50" y1="50" x2="50" y2="14" stroke="#000" stroke-width="2"/>
-        <line class="xclock-sec"  x1="50" y1="50" x2="50" y2="10" stroke="#800000" stroke-width="1"/>
-      </svg>
-    `,
-  });
+
+  // ── xclock (launched from the twm menu or an xterm) ──
+  let clockWin = null;
+  let clockTimer = null;
+  function openXclock() {
+    if (clockWin) {
+      reopenWin(clockWin);
+      return;
+    }
+    clockWin = makeWindow({
+      name: "xclock",
+      title: "xclock",
+      x: Math.max(12, dw - 190),
+      y: 16,
+      w: 160,
+      h: 180,
+      minW: 110,
+      minH: 120,
+      contentHTML: `
+        <svg class="xclock-face" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="46" fill="#c0c0c0" stroke="#000"/>
+          ${Array.from({ length: 12 }, (_, i) => {
+            const a = (i * Math.PI) / 6;
+            const x1 = 50 + 41 * Math.sin(a), y1 = 50 - 41 * Math.cos(a);
+            const x2 = 50 + 45 * Math.sin(a), y2 = 50 - 45 * Math.cos(a);
+            return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#000" stroke-width="2"/>`;
+          }).join("")}
+          <line class="xclock-hour" x1="50" y1="50" x2="50" y2="28" stroke="#000" stroke-width="3"/>
+          <line class="xclock-min"  x1="50" y1="50" x2="50" y2="14" stroke="#000" stroke-width="2"/>
+          <line class="xclock-sec"  x1="50" y1="50" x2="50" y2="10" stroke="#800000" stroke-width="1"/>
+        </svg>
+      `,
+    });
+    tickClock();
+    clockTimer = setInterval(tickClock, 1000);
+  }
 
   function tickClock() {
     const now = new Date();
@@ -251,28 +287,33 @@ function launchX() {
     set(".xclock-min", now.getMinutes() * 6);
     set(".xclock-sec", now.getSeconds() * 6);
   }
-  tickClock();
-  const clockTimer = setInterval(tickClock, 1000);
 
-  // ── xeyes ──
-  const eyesWin = makeWindow({
-    name: "xeyes",
-    title: "xeyes",
-    x: 16,
-    y: 16,
-    w: 190,
-    h: 140,
-    minW: 120,
-    minH: 96,
-    contentHTML: `
-      <div class="xeyes">
-        ${'<svg class="xeye" viewBox="0 0 100 130" preserveAspectRatio="none"><ellipse cx="50" cy="65" rx="45" ry="60" fill="#ffffff" stroke="#000000" stroke-width="7"/><ellipse class="xeye-pupil" cx="50" cy="65" rx="13" ry="13"/></svg>'.repeat(2)}
-      </div>
-    `,
-  });
+  // ── xeyes (launched from the twm menu or an xterm) ──
+  let eyesWin = null;
+  function openXeyes() {
+    if (eyesWin) {
+      reopenWin(eyesWin);
+      return;
+    }
+    eyesWin = makeWindow({
+      name: "xeyes",
+      title: "xeyes",
+      x: 16,
+      y: 16,
+      w: 190,
+      h: 140,
+      minW: 120,
+      minH: 96,
+      contentHTML: `
+        <div class="xeyes">
+          ${'<svg class="xeye" viewBox="0 0 100 130" preserveAspectRatio="none"><ellipse cx="50" cy="65" rx="45" ry="60" fill="#ffffff" stroke="#000000" stroke-width="7"/><ellipse class="xeye-pupil" cx="50" cy="65" rx="13" ry="13"/></svg>'.repeat(2)}
+        </div>
+      `,
+    });
+  }
 
   function onEyes(e) {
-    if (eyesWin.el.style.display === "none") return;
+    if (!eyesWin || eyesWin.el.style.display === "none") return;
     eyesWin.el.querySelectorAll("svg.xeye").forEach(eye => {
       const r = eye.getBoundingClientRect();
       if (!r.width || !r.height) return;
@@ -292,6 +333,120 @@ function launchX() {
     });
   }
   session.addEventListener("pointermove", onEyes);
+
+  // ── xterm ──
+  // A real shell in a window: commands run through the same pipe engine as
+  // the main terminal (js/xterm-shell.js). exit closes the window, startx
+  // errors because X is already running, xterm spawns another xterm.
+  function shellCtx() {
+    return {
+      font: state.DATA.figletFont,
+      fortunes: state.FORTUNES,
+      sections: state.sections,
+      now: new Date(),
+      pageLoadTime: state.pageLoadTime,
+      theme: document.documentElement.getAttribute("data-theme") || "green",
+      locale: navigator.language || "en-US",
+      neofetchAscii: state.DATA.neofetch || [],
+      neofetchInfo: state.DATA.neofetchInfo || [],
+      processes: state.DATA.btopProcesses || [],
+      env: probeEnvironment(),
+      resumeLines: buildResume(),
+      helpText: state.helpText,
+      experienceDetail: state.experienceDetail,
+      expKeys: state.EXP_KEYS,
+    };
+  }
+
+  let xtermCount = 0;
+  function spawnXterm() {
+    const n = xtermCount++;
+    const xw = Math.min(600, dw - 48);
+    const xh = Math.min(320, dh - 80);
+    const win = makeWindow({
+      name: "xterm",
+      title: "xterm",
+      x: clamp(24 + (n % 5) * 32, 8, dw - xw - 8),
+      y: clamp(dh - xh - 44 + (n % 5) * 24, 10, dh - 80),
+      w: xw,
+      h: xh,
+      minW: 260,
+      minH: 140,
+      contentHTML: `
+        <div class="xterm">
+          <div class="xterm-out"></div>
+          <div class="xterm-line">
+            <span class="xterm-prompt">visitor@bnied.dev:~$&nbsp;</span>
+            <input class="xterm-input" type="text" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="xterm command input">
+          </div>
+        </div>
+      `,
+    });
+    const box = win.el.querySelector(".xterm");
+    const out = win.el.querySelector(".xterm-out");
+    const input = win.el.querySelector(".xterm-input");
+    const hist = [];
+    let histPos = 0;
+
+    function print(text) {
+      const row = document.createElement("div");
+      row.className = "xterm-row";
+      row.textContent = text;
+      out.appendChild(row);
+    }
+
+    function run(raw) {
+      print(`visitor@bnied.dev:~$ ${raw}`);
+      if (raw.trim()) {
+        hist.push(raw);
+        histPos = hist.length;
+      }
+      const res = xtermRespond(raw, shellCtx());
+      (res.lines || []).forEach(print);
+      if (res.action === "exit") {
+        destroyWin(win);
+        return;
+      }
+      if (res.action === "clear") out.innerHTML = "";
+      else if (res.action === "spawn") spawnXterm();
+      else if (res.action && res.action.startsWith("open:")) {
+        const app = res.action.slice(5);
+        if (app === "xeyes") openXeyes();
+        else if (app === "xclock") openXclock();
+        else reopenWin(nsWin);
+      }
+      box.scrollTop = box.scrollHeight;
+    }
+
+    input.addEventListener("keydown", e => {
+      e.stopPropagation();
+      if (e.key === "Enter") {
+        run(input.value);
+        input.value = "";
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (histPos > 0) input.value = hist[--histPos];
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        histPos = Math.min(hist.length, histPos + 1);
+        input.value = histPos === hist.length ? "" : hist[histPos];
+      } else if (e.key === "Escape") {
+        input.blur();
+      }
+    });
+    // keep clicks from reaching the terminal's click-to-focus handler;
+    // don't steal focus from a text selection in progress
+    box.addEventListener("click", e => {
+      e.stopPropagation();
+      closeMenu();
+      closeNsMenu();
+      if (String(getSelection())) return;
+      input.focus();
+    });
+
+    input.focus();
+    return win;
+  }
 
   // ── Netscape ──
   const toolBtn = (act, label, gap) =>
@@ -606,7 +761,7 @@ function launchX() {
     if (srcWin) {
       srcWin.el.querySelector(".twm-content").innerHTML = body;
       srcWin.el.querySelector(".twm-title").textContent = title;
-      restore(srcWin);
+      reopenWin(srcWin);
     } else {
       srcWin = makeWindow({
         name: "view-source",
@@ -826,10 +981,12 @@ function launchX() {
     menu.className = "twm-menu";
     menu.innerHTML = `
       <div class="twm-menu-title">Twm</div>
+      <div class="twm-menu-item" data-mi="xterm">xterm</div>
       <div class="twm-menu-item" data-mi="netscape">Netscape</div>
       <div class="twm-menu-item" data-mi="xclock">xclock</div>
       <div class="twm-menu-item" data-mi="xeyes">xeyes</div>
       <div class="twm-menu-item" data-mi="refresh">Refresh</div>
+      <div class="twm-menu-item" data-mi="delete">Delete Window</div>
       <div class="twm-menu-sep"></div>
       <div class="twm-menu-item" data-mi="restart">Restart</div>
       <div class="twm-menu-item" data-mi="exit">Exit</div>
@@ -847,13 +1004,39 @@ function launchX() {
   }
 
   const menuActions = {
-    netscape: () => restore(nsWin),
-    xclock: () => restore(clockWin),
-    xeyes: () => restore(eyesWin),
+    xterm: () => spawnXterm(),
+    netscape: () => reopenWin(nsWin),
+    xclock: openXclock,
+    xeyes: openXeyes,
     refresh: () => flashRoot("#ffffff", REDUCED() ? 0 : 90),
+    delete: () => setDeleteMode(true),
     restart: () => flashRoot("#000000", REDUCED() ? 0 : 250),
     exit: () => cleanup(),
   };
+
+  // ── f.delete: the twm way to close a window ──
+  // "Delete Window" arms the pirate cursor; the next click kills the window
+  // (or icon) under it. Clicking the root desktop — or Esc — disarms it.
+  let deleteMode = false;
+  function setDeleteMode(v) {
+    deleteMode = v;
+    session.classList.toggle("x-delete", v);
+  }
+  function onDeleteClick(e) {
+    if (!deleteMode) return;
+    // capture phase, so this wins over every widget's own click handler
+    e.preventDefault();
+    e.stopPropagation();
+    closeMenu();
+    closeNsMenu();
+    const winEl = e.target.closest(".twm-win");
+    const iconEl = e.target.closest(".twm-icon");
+    const win = winEl ? windows.find(w => w.el === winEl)
+      : iconEl ? windows.find(w => w.icon === iconEl) : null;
+    if (win) destroyWin(win);
+    setDeleteMode(false);
+  }
+  session.addEventListener("click", onDeleteClick, true);
 
   // ── event wiring ──
   function onClick(e) {
@@ -894,10 +1077,15 @@ function launchX() {
 
   function onKey(e) {
     if (e.key !== "Escape") return;
-    // editing the location bar: its own handler cancels the edit instead
-    if (e.target === el.location) return;
+    // editing the location bar or typing in an xterm: their own handlers
+    // cancel the edit / blur the input instead
+    if (e.target === el.location || e.target.classList.contains("xterm-input")) return;
     e.preventDefault();
     e.stopPropagation();
+    if (deleteMode) {
+      setDeleteMode(false);
+      return;
+    }
     if (nsMenuEl) {
       closeNsMenu();
       return;
