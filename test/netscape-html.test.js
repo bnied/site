@@ -41,7 +41,7 @@ test("experience splits roles with italic dates and re-flowed bullets", () => {
   assert.ok(html.includes("<i>Site Reliability Engineer, 2021 - Present</i>"));
   assert.ok(html.includes("<h3>DATAPIPE, INC</h3>"));
   // continuation lines merged into single <li>
-  assert.ok(html.includes("<li>Wrote daemon to monitor Cassandra pods in k8s namespaces, track operational states, and auto-replace pods in inoperative states past pre-configured durations</li>"));
+  assert.ok(html.includes("<li>Wrote daemon to monitor Cassandra pods in Kubernetes namespaces, track operational states, and auto-replace pods in inoperative states past pre-configured durations</li>"));
   // terminal usage hints never make it in
   assert.ok(!html.includes("For details, run"));
 });
