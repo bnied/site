@@ -49,6 +49,8 @@ test("clear clears, xterm spawns another xterm", () => {
 test("X clients open (or raise) their windows", () => {
   assert.equal(xtermRespond("xeyes", ctx).action, "open:xeyes");
   assert.equal(xtermRespond("xclock", ctx).action, "open:xclock");
+  assert.equal(xtermRespond("xload", ctx).action, "open:xload");
+  assert.equal(xtermRespond("xcalc", ctx).action, "open:xcalc");
   const ns = xtermRespond("netscape", ctx);
   assert.equal(ns.action, "open:netscape");
   assert.match(ns.lines[0], /lock/);

@@ -371,7 +371,7 @@ export function runCommand(raw) {
     addLine(`  ${escapeHTML(cmd)}: command not found`, "line-highlight", true);
     addLine("  (this is a twm household. try 'startx')", "line-comment", true);
     addLine("", null, false);
-  } else if (cmd === "netscape" || cmd === "mosaic" || cmd === "surf" || cmd === "xeyes" || cmd === "xclock" || cmd === "xterm") {
+  } else if (cmd === "netscape" || cmd === "mosaic" || cmd === "surf" || cmd === "xeyes" || cmd === "xclock" || cmd === "xterm" || cmd === "xload" || cmd === "xcalc") {
     addLine(`  ${escapeHTML(cmd)}: cannot open display :0`, "line-highlight", true);
     addLine("  (graphical programs need X running. try 'startx')", "line-comment", true);
     addLine("", null, false);

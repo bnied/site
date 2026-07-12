@@ -7,7 +7,8 @@
 // via js/xterm-shell.js). The Netscape menu bar is fully wired: real Back/Forward
 // history in Go, Options toggles that hide chrome rows, View > Document
 // Source, Open Location with fake DNS errors, and Help > About Netscape.
-// Esc or root menu > Exit quits back to the terminal.
+// Root menu > Exit (or the classic Ctrl+Alt+Backspace server zap) quits
+// back to the terminal; Esc only closes menus and dialogs, as it should.
 // Styling lives in css/style.css under "X11 SESSION".
 
 import { cmdInput } from "../dom.js";
@@ -15,6 +16,7 @@ import { addLine, scrollToBottom } from "../render.js";
 import { state } from "../state.js";
 import { netscapePages } from "../netscape-html.js";
 import { xtermRespond } from "../xterm-shell.js";
+import { xcalcInit, xcalcPress } from "../xcalc.js";
 import { probeEnvironment } from "./dmesg.js";
 import { buildResume } from "./misc.js";
 
@@ -107,7 +109,7 @@ function launchX() {
   const session = document.createElement("div");
   session.id = "x-session";
   session.innerHTML = `<div class="x-desktop">
-    <div class="twm-hint">click the desktop for the Twm menu &middot; Esc quits</div>
+    <div class="twm-hint">click the desktop for the Twm menu &middot; Ctrl+Alt+Backspace kills X</div>
   </div>`;
   document.body.appendChild(session);
   const desktop = session.querySelector(".x-desktop");
@@ -334,6 +336,130 @@ function launchX() {
   }
   session.addEventListener("pointermove", onEyes);
 
+  // ── xload (launched from the twm menu or an xterm) ──
+  // The classic strip chart. The "load" is theater, but honest theater:
+  // it tracks how many windows the session has open, so killing windows
+  // visibly calms the machine down.
+  let loadWin = null;
+  let loadTimer = null;
+  function openXload() {
+    if (loadWin) {
+      reopenWin(loadWin);
+      return;
+    }
+    loadWin = makeWindow({
+      name: "xload",
+      title: "xload",
+      x: 16,
+      y: 180,
+      w: 210,
+      h: 130,
+      minW: 140,
+      minH: 90,
+      contentHTML: `
+        <div class="xload">
+          <span class="xload-label">bnied.dev</span>
+          <canvas class="xload-canvas"></canvas>
+        </div>
+      `,
+    });
+    const canvas = loadWin.el.querySelector(".xload-canvas");
+    const label = loadWin.el.querySelector(".xload-label");
+    const samples = [];
+    let load = 0.08 + windows.length * 0.14;
+
+    function draw() {
+      const w = canvas.width;
+      const h = canvas.height;
+      if (!w || !h) return;
+      const g = canvas.getContext("2d");
+      g.fillStyle = "#ffffff";
+      g.fillRect(0, 0, w, h);
+      const view = samples.slice(-w);
+      const units = Math.max(1, Math.ceil(Math.max(...view, 0.01)));
+      g.fillStyle = "#000000";
+      for (let u = 1; u < units; u++) {
+        g.fillRect(0, Math.round(h - (u * h) / units), w, 1);
+      }
+      view.forEach((v, i) => {
+        const y = Math.round(h - (v * h) / units);
+        g.fillRect(i, y, 1, h - y);
+      });
+    }
+
+    function tick() {
+      const target = 0.08 + windows.length * 0.14
+        + (Math.random() < 0.05 ? Math.random() * 1.2 : 0);
+      load += (target - load) * 0.3 + (Math.random() - 0.5) * 0.07;
+      load = Math.max(0.02, load);
+      samples.push(load);
+      if (samples.length > 1024) samples.shift();
+      label.textContent = `bnied.dev ${load.toFixed(2)}`;
+      draw();
+    }
+
+    new ResizeObserver(() => {
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
+      draw();
+    }).observe(canvas);
+    tick();
+    loadTimer = setInterval(tick, 1000);
+  }
+
+  // ── xcalc (launched from the twm menu or an xterm) ──
+  // TI-30 mode, honestly functional: the key logic lives in js/xcalc.js.
+  const XCALC_KEYS = [
+    ["1/x", "1/x"], ["x²", "sq"], ["√", "sqrt"], ["CE/C", "ce"], ["AC", "ac"],
+    ["INV", "inv"], ["sin", "sin"], ["cos", "cos"], ["tan", "tan"], ["DRG", "drg"],
+    ["e", "e"], ["EE", "ee"], ["log", "log"], ["ln", "ln"], ["yˣ", "pow"],
+    ["π", "pi"], ["x!", "fact"], ["(", "("], [")", ")"], ["÷", "/"],
+    ["STO", "sto"], ["7", "7"], ["8", "8"], ["9", "9"], ["×", "*"],
+    ["RCL", "rcl"], ["4", "4"], ["5", "5"], ["6", "6"], ["−", "-"],
+    ["SUM", "sum"], ["1", "1"], ["2", "2"], ["3", "3"], ["+", "+"],
+    ["EXC", "exc"], ["0", "0"], [".", "."], ["+/-", "+/-"], ["=", "="],
+  ];
+  let calcWin = null;
+  function openXcalc() {
+    if (calcWin) {
+      reopenWin(calcWin);
+      return;
+    }
+    let calc = xcalcInit();
+    calcWin = makeWindow({
+      name: "xcalc",
+      title: "Calculator",
+      x: Math.max(16, dw - 270),
+      y: Math.min(220, Math.max(16, dh - 400)),
+      w: 240,
+      h: 340,
+      minW: 210,
+      minH: 300,
+      contentHTML: `
+        <div class="xcalc">
+          <div class="xcalc-display">
+            <span class="xcalc-ind">DEG</span>
+            <span class="xcalc-val">0</span>
+          </div>
+          <div class="xcalc-keys">
+            ${XCALC_KEYS.map(([label, key]) =>
+              `<button class="xcalc-btn" data-k="${key}">${label}</button>`).join("")}
+          </div>
+        </div>
+      `,
+    });
+    const val = calcWin.el.querySelector(".xcalc-val");
+    const ind = calcWin.el.querySelector(".xcalc-ind");
+    calcWin.el.querySelector(".xcalc-keys").addEventListener("click", e => {
+      e.stopPropagation();
+      const btn = e.target.closest(".xcalc-btn");
+      if (!btn) return;
+      calc = xcalcPress(calc, btn.dataset.k);
+      val.textContent = calc.display;
+      ind.textContent = `${calc.drg}${calc.inv ? " INV" : ""}${calc.memSet ? " M" : ""}`;
+    });
+  }
+
   // ── xterm ──
   // A real shell in a window: commands run through the same pipe engine as
   // the main terminal (js/xterm-shell.js). exit closes the window, startx
@@ -413,6 +539,8 @@ function launchX() {
         const app = res.action.slice(5);
         if (app === "xeyes") openXeyes();
         else if (app === "xclock") openXclock();
+        else if (app === "xload") openXload();
+        else if (app === "xcalc") openXcalc();
         else reopenWin(nsWin);
       }
       box.scrollTop = box.scrollHeight;
@@ -985,6 +1113,8 @@ function launchX() {
       <div class="twm-menu-item" data-mi="netscape">Netscape</div>
       <div class="twm-menu-item" data-mi="xclock">xclock</div>
       <div class="twm-menu-item" data-mi="xeyes">xeyes</div>
+      <div class="twm-menu-item" data-mi="xload">xload</div>
+      <div class="twm-menu-item" data-mi="xcalc">xcalc</div>
       <div class="twm-menu-item" data-mi="refresh">Refresh</div>
       <div class="twm-menu-item" data-mi="delete">Delete Window</div>
       <div class="twm-menu-sep"></div>
@@ -1008,6 +1138,8 @@ function launchX() {
     netscape: () => reopenWin(nsWin),
     xclock: openXclock,
     xeyes: openXeyes,
+    xload: openXload,
+    xcalc: openXcalc,
     refresh: () => flashRoot("#ffffff", REDUCED() ? 0 : 90),
     delete: () => setDeleteMode(true),
     restart: () => flashRoot("#000000", REDUCED() ? 0 : 250),
@@ -1076,6 +1208,13 @@ function launchX() {
   });
 
   function onKey(e) {
+    // the classic X server zap — the only keyboard way out, as is proper
+    if (e.key === "Backspace" && e.ctrlKey && e.altKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      cleanup();
+      return;
+    }
     if (e.key !== "Escape") return;
     // editing the location bar or typing in an xterm: their own handlers
     // cancel the edit / blur the input instead
@@ -1095,17 +1234,14 @@ function launchX() {
       return;
     }
     const dlg = desktop.querySelector(".motif-dialog");
-    if (dlg) {
-      dlg.remove();
-      return;
-    }
-    cleanup();
+    if (dlg) dlg.remove();
   }
   document.addEventListener("keydown", onKey, true);
 
   function cleanup() {
     document.removeEventListener("keydown", onKey, true);
     clearInterval(clockTimer);
+    clearInterval(loadTimer);
     clearTimeout(progressTimer);
     session.remove();
     addLine("  xinit: connection to X server lost", "line-comment", true);
