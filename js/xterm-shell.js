@@ -50,7 +50,9 @@ export function xtermRespond(raw, ctx) {
     return { lines: [`${cmd}: another window manager is already running on screen 0?`] };
   }
   if (cmd === "xterm") return { action: "spawn" };
-  if (cmd === "xeyes" || cmd === "xclock") return { action: "open:" + cmd };
+  if (cmd === "xeyes" || cmd === "xclock" || cmd === "xload" || cmd === "xcalc") {
+    return { action: "open:" + cmd };
+  }
   if (cmd === "netscape" || cmd === "mosaic") {
     return {
       action: "open:netscape",
@@ -61,7 +63,7 @@ export function xtermRespond(raw, ctx) {
   if (CONSOLE_ONLY.has(cmd.split(" ")[0])) {
     return { lines: [
       `${cmd.split(" ")[0]}: cannot open console device (running under X)`,
-      "(quit the session — Esc — and run it from the terminal)",
+      "(quit the session — Twm menu > Exit — and run it from the terminal)",
     ] };
   }
 
