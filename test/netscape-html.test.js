@@ -48,7 +48,7 @@ test("experience splits roles with italic dates and re-flowed bullets", () => {
 
 test("projects keep real links and blink NEW! on recent work", () => {
   const html = pages.projects.html;
-  assert.ok(html.includes('href="https://codeberg.org/bnied/neofsn"'));
+  assert.ok(html.includes('href="https://source.tube/spaceduck/neofsn"'));
   assert.ok(html.includes('<span class="ns-blink">NEW!</span>'));
   assert.ok(html.includes("<h2>Contributions</h2>"));
 });
@@ -57,5 +57,5 @@ test("contact renders a table with a mailto link", () => {
   const html = pages.contact.html;
   assert.ok(html.includes('href="mailto:bnied@spaceduck.org"'));
   assert.ok(html.includes("<b>Email</b>"));
-  assert.ok(html.includes('href="https://codeberg.org/bnied"'));
+  assert.ok(html.includes('href="https://source.tube/spaceduck"'));
 });

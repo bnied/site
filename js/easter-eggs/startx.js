@@ -691,7 +691,7 @@ function launchX() {
   function render(key) {
     const page = pages[key] || pages.home;
     el.content.innerHTML = page.html;
-    // real links (codeberg, github, ...) escape the fake browser into a new tab
+    // real links (sourcetube, github, ...) escape the fake browser into a new tab
     el.content.querySelectorAll("a[href]:not([data-page])").forEach(a => {
       a.target = "_blank";
       a.rel = "noopener";
@@ -997,7 +997,7 @@ function launchX() {
         action: () => navigate(k),
       })),
       { sep: true },
-      { label: "Codeberg: bnied", action: () => window.open("https://codeberg.org/bnied", "_blank", "noopener") },
+      { label: "SourceTube: spaceduck", action: () => window.open("https://source.tube/spaceduck", "_blank", "noopener") },
     ],
     options: () => [
       { label: "General Preferences...", action: () => showDialog("Preferences", "Fonts: fixed.\nColors: gray.\nThese are the correct settings\nand cannot be improved.") },
