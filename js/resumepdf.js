@@ -96,7 +96,7 @@ export function resumeModel(sections, experienceDetail, expKeys) {
   items.push({ t: "title", s: IDENTITY.title });
   const bits = [];
   for (const e of entries(sections.contact)) {
-    const m = e.text.match(/^(email|codeberg|github|linkedin)\s+(.+)$/i);
+    const m = e.text.match(/^(email|sourcetube|github|linkedin)\s+(.+)$/i);
     if (m) bits.push(m[2]);
   }
   if (bits.length) items.push({ t: "contact", s: bits.join("   ·   ") });
