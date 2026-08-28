@@ -1,5 +1,6 @@
 // Keyboard and input handling: cursor sync, tab completion (with ghost text),
-// history navigation, Ctrl+L to clear, click-to-focus.
+// history navigation, Ctrl+L to clear, click-to-focus, and click-to-run for
+// the .cmd-link tokens that cmdlink.js emits into the output.
 
 import { cmdInput, inputSizer, cursor, output } from "./dom.js";
 import { state } from "./state.js";
@@ -60,6 +61,25 @@ function clearTabGhost() {
 }
 
 export function initInput(runCommand) {
+  // Single path for submitting a command, whether it was typed or clicked, so
+  // both land in the history that ArrowUp and the `history` command read.
+  function submit(val) {
+    if (val.trim()) state.history.unshift(val);
+    historyIdx = -1;
+    runCommand(val);
+  }
+
+  // Delegated so it covers command tokens rendered at any point — the boot
+  // hint, `help`, a did-you-mean suggestion.
+  output.addEventListener("click", (e) => {
+    const link = e.target.closest(".cmd-link");
+    if (!link) return;
+    submit(link.dataset.cmd);
+    cmdInput.value = "";
+    syncCursor();
+    clearTabGhost();
+  });
+
   cmdInput.addEventListener("input", () => {
     syncCursor();
     showTabGhost();
@@ -67,10 +87,7 @@ export function initInput(runCommand) {
 
   cmdInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
-      const val = cmdInput.value;
-      if (val.trim()) state.history.unshift(val);
-      historyIdx = -1;
-      runCommand(val);
+      submit(cmdInput.value);
       cmdInput.value = "";
       syncCursor();
       clearTabGhost();

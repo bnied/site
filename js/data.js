@@ -54,4 +54,13 @@ export async function loadData() {
     ...state.EXP_KEYS.map(k => "experience " + k),
     ...state.THEME_NAMES.map(t => "theme " + t),
   ];
+
+  // The documented surface, used only for "did you mean?" on an unknown
+  // command. Deliberately excludes the easter-egg decoys above: those are
+  // meant to be stumbled into, and offering `su` for a typo is just noise.
+  state.REAL_COMMANDS = [
+    "about", "skills", "experience", "projects", "education", "contact",
+    "resume", "help", "clear", "all", "theme", "crt",
+    "figlet", "lolcat", "cowsay", "fortune", "neofetch", "cat", "echo",
+  ];
 }

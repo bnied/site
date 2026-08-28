@@ -15,7 +15,8 @@ export const state = {
 
   // Derived by loadData()
   EXP_KEYS: [],
-  COMMANDS: [],
+  COMMANDS: [],      // everything Tab completes, decoys included
+  REAL_COMMANDS: [], // documented surface only, for "did you mean?"
 
   // Static
   THEME_NAMES: ["green", "amber", "blue", "high-contrast", "colorblind"],

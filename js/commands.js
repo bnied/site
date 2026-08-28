@@ -11,6 +11,8 @@ import {
   runDmesg, probeEnvironment, runResume, buildResume, runStartx,
 } from "./easter-eggs/index.js";
 import { hasPipe, runPipeline } from "./pipeline.js";
+import { linkifyCommand } from "./cmdlink.js";
+import { didYouMean } from "./suggest.js";
 import { figletText } from "./figlet.js";
 import { CRT_LEVELS, crtLevelFromArg, getCrt, setCrt } from "./crt.js";
 import {
@@ -221,11 +223,18 @@ export function runCommand(raw) {
     addLine("", null, false);
   } else if (cmd === "theme") {
     addLine("  available themes:", "line-comment", true);
-    addLine("    green            default phosphor green", "line-highlight", true);
-    addLine("    amber            warm amber phosphor", "line-highlight", true);
-    addLine("    blue             cool blue phosphor", "line-highlight", true);
-    addLine("    high-contrast    maximum readability", "line-highlight", true);
-    addLine("    colorblind       deuteranopia-safe palette", "line-highlight", true);
+    // Each name runs `theme <name>` on click; the padding sits outside the
+    // link so the description column stays aligned.
+    for (const [name, desc] of [
+      ["green", "default phosphor green"],
+      ["amber", "warm amber phosphor"],
+      ["blue", "cool blue phosphor"],
+      ["high-contrast", "maximum readability"],
+      ["colorblind", "deuteranopia-safe palette"],
+    ]) {
+      const label = linkifyCommand(name, name, "theme " + name);
+      addLine("    " + label + pad("", 17 - name.length, true) + desc, "line-highlight", true);
+    }
     addLine("", null, false);
     addLine("  usage: theme &lt;name&gt;", "line-comment", true);
     addLine("", null, false);
@@ -462,7 +471,13 @@ export function runCommand(raw) {
     addLines(state.sections[cmd]);
   } else {
     addLine(`  command not found: ${escapeHTML(cmd)}`, "line-highlight", true);
-    addLine("  type 'help' for available commands", "line-comment", true);
+    // Suggest on the first word only — `expierence datapipe` should still
+    // offer `experience` rather than scoring the whole string.
+    const guess = didYouMean(cmd.split(/\s+/)[0], state.REAL_COMMANDS);
+    if (guess) {
+      addLine(`  did you mean ${linkifyCommand(guess, guess)}?`, "line-comment", true);
+    }
+    addLine(`  type ${linkifyCommand("help", "help")} for available commands`, "line-comment", true);
     addLine("", null, false);
   }
 
