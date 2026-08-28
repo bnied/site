@@ -438,6 +438,24 @@ html, body {
   text-shadow: 0 0 12px var(--amber-glow), 0 0 30px rgba(255, 176, 0, 0.15);
 }
 
+/* Clickable command tokens (cmdlink.js). Underline and color only — no
+   padding or border-width that would shift the monospace grid and break the
+   description columns in `help`. */
+.cmd-link {
+  cursor: pointer;
+  border-bottom: 1px dotted currentColor;
+  transition: color 0.15s, text-shadow 0.15s;
+}
+.cmd-link:hover,
+.cmd-link:active {
+  color: var(--text-bright);
+  border-bottom-style: solid;
+  text-shadow: 0 0 10px var(--p1-glow), 0 0 24px var(--p1-bloom);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cmd-link { transition: none; }
+}
+
 .line-separator {
   color: var(--p1-faint);
   user-select: none;

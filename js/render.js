@@ -2,6 +2,7 @@
 // elements in the output area, and scroll to keep the prompt visible.
 
 import { output, terminal } from "./dom.js";
+import { linkifyCommand } from "./cmdlink.js";
 
 export function addLine(text, cls, animate) {
   const div = document.createElement("div");
@@ -10,8 +11,11 @@ export function addLine(text, cls, animate) {
   output.appendChild(div);
 }
 
+// A line carrying a `cmd` field gets that command name wrapped as a clickable
+// token — see data/help.json, where the padding stays outside the span so the
+// description column keeps its alignment.
 export function addLines(lines) {
-  lines.forEach(l => addLine(l.text, l.cls, true));
+  lines.forEach(l => addLine(l.cmd ? linkifyCommand(l.text, l.cmd) : l.text, l.cls, true));
 }
 
 export function scrollToBottom() {

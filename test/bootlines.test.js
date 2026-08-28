@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { buildBootLines } from "../js/bootlines.js";
+import { buildBootLines, START_HERE } from "../js/bootlines.js";
 
 const bios = [
   { text: "  SPACEDUCK BIOS", cls: "line-system" },
@@ -27,6 +27,20 @@ test("buildBootLines concatenates bios, ascii, profile, and the login fortune", 
   assert.ok(fIdx > -1 && lines[fIdx].cls === "line-accent");
   assert.equal(lines[fIdx - 1].cls, "line-separator");
   assert.equal(lines[fIdx + 1].cls, "line-separator");
-  // ends with the help line then a blank
-  assert.ok(texts.includes("  Type 'help' for available commands."));
+  // ends with the landing hint, the help fallback, then a blank
+  assert.ok(texts.some(t => t.startsWith("  Start here:")));
+  assert.ok(texts.includes("  or type 'help' to see everything."));
+  assert.equal(texts[texts.length - 1], "");
+});
+
+test("buildBootLines makes every start-here command clickable", () => {
+  const lines = buildBootLines({
+    bios, asciiName, role: "SRE", email: "x@y.z", fortune: "It was DNS.",
+  });
+  const hint = lines.find(l => l.text.startsWith("  Start here:"));
+  for (const cmd of START_HERE) {
+    assert.ok(hint.text.includes(`data-cmd="${cmd}"`), `${cmd} should be clickable`);
+  }
+  // One link per command — no name matched inside another's injected markup.
+  assert.equal(hint.text.match(/cmd-link/g).length, START_HERE.length);
 });
