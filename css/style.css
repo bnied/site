@@ -470,16 +470,45 @@ html, body {
   .cmd-link { transition: none; }
 }
 
+/* Section rules are drawn as a border so they span the terminal at every
+   width, rather than stopping at the 62 columns the run of glyphs is authored
+   to. The glyphs stay in the DOM, painted transparent: they keep the line's
+   height, and `cat`/pipe output reads the same data and still has its rules.
+   pre + hidden keeps an over-wide run from wrapping to a second line. */
 .line-separator {
-  color: var(--p1-faint);
+  color: transparent;
   user-select: none;
   text-shadow: none;
   opacity: 0.6;
-  /* Rules are cut to the width of the text they bracket, which can overrun a
-     narrow viewport. Clip the overhang rather than inheriting #output's
-     pre-wrap, which drops the tail onto a second line as a stray stub. */
   white-space: pre;
   overflow: hidden;
+  position: relative;
+}
+.line-separator::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 3px;
+  transform: translateY(-50%);
+  border-top: 1px solid var(--p1-faint);
+  border-bottom: 1px solid var(--p1-faint);
+}
+
+/* SEP_THIN divides subsections (PROJECTS / CONTRIBUTIONS) — one line, not two. */
+.line-rule-thin::before {
+  height: 0;
+  border-bottom: none;
+}
+
+/* The MOTD rules are cut to the fortune's width on purpose, so they stay
+   glyphs rather than spanning the terminal. */
+.line-motd-rule {
+  color: var(--p1-faint);
+}
+.line-motd-rule::before {
+  content: none;
 }
 
 .line-bullet {
@@ -1572,3 +1601,61 @@ html[data-crt="max"] #screen { animation: flicker 8s infinite, syncRoll 24s ease
   display: block;
 }
 .xeye-pupil { fill: #000; }
+
+/* ═══ No-JS fallback ══════════════════════════════════════════
+   The <noscript> body is only parsed when scripting is off, so #noscript
+   exists exactly when the terminal cannot run. It covers the dead CRT rather
+   than sitting behind it. Plain, readable type — this is what a crawler, a
+   link preview, and reader mode see. */
+#noscript {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow-y: auto;
+  margin: 0;
+  padding: 6vh 5vw;
+  background: var(--bg, #0a0f0a);
+  color: var(--text, #20cc20);
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.6;
+}
+#noscript > * {
+  max-width: 42rem;
+  margin-inline: auto;
+}
+#noscript h1 {
+  margin: 0;
+  font-size: 1.9rem;
+  letter-spacing: 0.04em;
+}
+#noscript .role {
+  margin: 0.2rem auto 1.4rem;
+  color: var(--comment, #0a660a);
+}
+#noscript .note {
+  margin-bottom: 2.4rem;
+  padding: 0.7rem 0.9rem;
+  border-left: 3px solid var(--p1-faint, #0a660a);
+  color: var(--comment, #0a660a);
+}
+#noscript h2 {
+  margin: 2.4rem auto 0.8rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--p1-faint, #0a660a);
+  font-size: 1.15rem;
+  letter-spacing: 0.12em;
+}
+#noscript h3 {
+  margin: 1.6rem auto 0.4rem;
+  font-size: 1rem;
+}
+#noscript .dates {
+  float: right;
+  font-weight: 400;
+  color: var(--comment, #0a660a);
+}
+#noscript p { margin: 0 auto 0.7rem; }
+#noscript ul { margin: 0 auto 1rem; padding-left: 1.3rem; }
+#noscript li { margin-bottom: 0.35rem; }
+#noscript a { color: var(--link, #ffb000); }
