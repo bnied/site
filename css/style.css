@@ -485,6 +485,20 @@ html, body {
 .line-bullet {
   padding-left: 2ch;
 }
+
+/* Prose the terminal re-joined from the JSON's hard-wrapped lines (see
+   render.js addSection). Same hanging indent as the MOTD: the wrapped
+   remainder lines up under the first line rather than falling back to the
+   left edge, and the right gutter matches the left. Bullets hang two columns
+   further, clearing their '> ' marker. */
+.line-flow {
+  padding-left: 2ch;
+  text-indent: -2ch;
+  padding-right: 2ch;
+}
+.line-bullet.line-flow {
+  padding-left: 4ch;
+}
 .line-bullet::before {
   content: '> ';
   color: var(--p1-faint);

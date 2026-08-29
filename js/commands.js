@@ -3,7 +3,7 @@
 // inline response (for short commands) or an imported easter-egg module.
 
 import { output } from "./dom.js";
-import { addLine, addLines, escapeHTML, pad, scrollToBottom } from "./render.js";
+import { addLine, addLines, addSection, escapeHTML, pad, scrollToBottom } from "./render.js";
 import { state } from "./state.js";
 import {
   runBtop, runDoom, runLs, runShutdown, runSL, runCmatrix, runTraceroute, runPing,
@@ -111,19 +111,19 @@ export function runCommand(raw) {
     scrollToBottom();
     return;
   } else if (cmd === "all") {
-    addLines(state.sections.about);
-    addLines(state.sections.contact);
-    addLines(state.sections.skills);
-    addLines(state.sections.experience);
+    addSection(state.sections.about);
+    addSection(state.sections.contact);
+    addSection(state.sections.skills);
+    addSection(state.sections.experience);
     for (const key of state.EXP_KEYS) {
-      addLines(state.experienceDetail[key]);
+      addSection(state.experienceDetail[key]);
     }
-    addLines(state.sections.projects);
-    addLines(state.sections.education);
+    addSection(state.sections.projects);
+    addSection(state.sections.education);
   } else if (cmd.startsWith("experience ")) {
     const sub = cmd.slice(11).trim();
     if (state.experienceDetail[sub]) {
-      addLines(state.experienceDetail[sub]);
+      addSection(state.experienceDetail[sub]);
     } else {
       addLine(`  unknown role: ${escapeHTML(sub)}`, "line-highlight", true);
       addLine("  available: " + state.EXP_KEYS.join(", "), "line-comment", true);
@@ -178,7 +178,7 @@ export function runCommand(raw) {
       addLine("  cat: resume.pdf is a binary file", "line-highlight", true);
       addLine("  (run 'resume' to download it, or 'cat resume.txt' for plain text)", "line-comment", true);
     } else if (state.sections[sectionName]) {
-      addLines(state.sections[sectionName]);
+      addSection(state.sections[sectionName]);
     } else if (file === ".secrets") {
       addLine("  cat: .secrets: Permission denied", "line-highlight", true);
     } else {
@@ -432,9 +432,9 @@ export function runCommand(raw) {
     addLine("  nice try.", "line-highlight", true);
     addLine("", null, false);
   } else if (cmd === "whoami --verbose") {
-    addLines(state.sections.about);
-    addLines(state.sections.skills);
-    addLines(state.sections.contact);
+    addSection(state.sections.about);
+    addSection(state.sections.skills);
+    addSection(state.sections.contact);
   } else if (cmd.startsWith("traceroute ") || cmd.startsWith("tracert ")) {
     const host = cmd.split(" ").slice(1).join(" ").trim();
     runTraceroute(host);
@@ -468,7 +468,7 @@ export function runCommand(raw) {
     }
     addLine("", null, false);
   } else if (state.sections[cmd]) {
-    addLines(state.sections[cmd]);
+    addSection(state.sections[cmd]);
   } else {
     addLine(`  command not found: ${escapeHTML(cmd)}`, "line-highlight", true);
     // Suggest on the first word only — `expierence datapipe` should still
