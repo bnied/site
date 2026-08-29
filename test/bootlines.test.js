@@ -27,9 +27,13 @@ test("buildBootLines concatenates bios, ascii, profile, and the login fortune", 
   assert.ok(fIdx > -1 && lines[fIdx].cls === "line-accent");
   assert.equal(lines[fIdx - 1].cls, "line-separator");
   assert.equal(lines[fIdx + 1].cls, "line-separator");
-  // and the rules are cut to the fortune line's width
-  assert.equal(lines[fIdx - 1].text.length, lines[fIdx].text.length);
-  assert.equal(lines[fIdx + 1].text.length, lines[fIdx].text.length);
+  // and the rules are cut to the fortune's width, overhanging it evenly:
+  // the text is indented two columns, the rules start at column zero and run
+  // two columns past the end of the text.
+  const indent = lines[fIdx].text.length - lines[fIdx].text.trimStart().length;
+  for (const rule of [lines[fIdx - 1], lines[fIdx + 1]]) {
+    assert.equal(rule.text.length, lines[fIdx].text.length + indent);
+  }
   // ends with the landing hint, the help fallback, then a blank
   assert.ok(texts.some(t => t.startsWith("  Start here:")));
   assert.ok(texts.includes("  or type 'help' to see everything."));

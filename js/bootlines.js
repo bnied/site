@@ -9,11 +9,15 @@ import { linkifyCommand } from "./cmdlink.js";
 // string — a later name could otherwise match inside earlier injected markup.
 export const START_HERE = ["about", "projects", "resume"];
 
+// Body lines are indented two columns; the MOTD rules start at column zero.
+const INDENT = "  ";
+
 // The MOTD rules bracket the fortune, so they're cut to its width rather than a
 // fixed one — fortunes vary from ~20 to ~100 columns and a fixed rule either
-// falls short of the long ones or overhangs the short ones.
-function ruleFor(line) {
-  return "\u2550".repeat(line.length);
+// falls short of the long ones or overhangs the short ones. The rule runs one
+// indent past each end of the text so the overhang is even on both sides.
+function ruleFor(text) {
+  return "\u2550".repeat(text.length + INDENT.length * 2);
 }
 
 export function buildBootLines({ bios, asciiName, role, email, fortune }) {
@@ -33,10 +37,9 @@ export function buildBootLines({ bios, asciiName, role, email, fortune }) {
   lines.push({ text: "  " + role, cls: "line-comment", delay: 30 });
   lines.push({ text: "  " + email, cls: "line-comment", delay: 30 });
   lines.push({ text: "", delay: 30 });
-  const fortuneLine = "  " + fortune;
-  lines.push({ text: ruleFor(fortuneLine), cls: "line-separator", delay: 50 });
-  lines.push({ text: fortuneLine, cls: "line-accent", delay: 40 });
-  lines.push({ text: ruleFor(fortuneLine), cls: "line-separator", delay: 30 });
+  lines.push({ text: ruleFor(fortune), cls: "line-separator", delay: 50 });
+  lines.push({ text: INDENT + fortune, cls: "line-accent", delay: 40 });
+  lines.push({ text: ruleFor(fortune), cls: "line-separator", delay: 30 });
   lines.push({ text: "", delay: 30 });
   const starts = START_HERE.map(c => linkifyCommand(c, c)).join("   ");
   lines.push({ text: "  Start here:  " + starts, cls: "line-ok", delay: 0 });
