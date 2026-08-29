@@ -2,13 +2,19 @@
 // the profile, and an MOTD-style login fortune. No DOM, no randomness (the
 // chosen fortune is injected) — so the assembly is unit-tested.
 
-import { SEP } from "./data.js";
 import { linkifyCommand } from "./cmdlink.js";
 
 // Where a first-time visitor should go before they've read `help`. Each is
 // linkified on its own and joined, rather than chaining linkifyCommand over one
 // string — a later name could otherwise match inside earlier injected markup.
 export const START_HERE = ["about", "projects", "resume"];
+
+// The MOTD rules bracket the fortune, so they're cut to its width rather than a
+// fixed one — fortunes vary from ~20 to ~100 columns and a fixed rule either
+// falls short of the long ones or overhangs the short ones.
+function ruleFor(line) {
+  return "\u2550".repeat(line.length);
+}
 
 export function buildBootLines({ bios, asciiName, role, email, fortune }) {
   const lines = [];
@@ -27,9 +33,10 @@ export function buildBootLines({ bios, asciiName, role, email, fortune }) {
   lines.push({ text: "  " + role, cls: "line-comment", delay: 30 });
   lines.push({ text: "  " + email, cls: "line-comment", delay: 30 });
   lines.push({ text: "", delay: 30 });
-  lines.push({ text: SEP, cls: "line-separator", delay: 50 });
-  lines.push({ text: "  " + fortune, cls: "line-accent", delay: 40 });
-  lines.push({ text: SEP, cls: "line-separator", delay: 30 });
+  const fortuneLine = "  " + fortune;
+  lines.push({ text: ruleFor(fortuneLine), cls: "line-separator", delay: 50 });
+  lines.push({ text: fortuneLine, cls: "line-accent", delay: 40 });
+  lines.push({ text: ruleFor(fortuneLine), cls: "line-separator", delay: 30 });
   lines.push({ text: "", delay: 30 });
   const starts = START_HERE.map(c => linkifyCommand(c, c)).join("   ");
   lines.push({ text: "  Start here:  " + starts, cls: "line-ok", delay: 0 });
