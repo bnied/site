@@ -38,7 +38,7 @@ export function buildBootLines({ bios, asciiName, role, email, fortune }) {
   lines.push({ text: "  " + email, cls: "line-comment", delay: 30 });
   lines.push({ text: "", delay: 30 });
   lines.push({ text: ruleFor(fortune), cls: "line-separator", delay: 50 });
-  lines.push({ text: INDENT + fortune, cls: "line-accent", delay: 40 });
+  lines.push({ text: INDENT + fortune, cls: "line-accent line-motd", delay: 40 });
   lines.push({ text: ruleFor(fortune), cls: "line-separator", delay: 30 });
   lines.push({ text: "", delay: 30 });
   const starts = START_HERE.map(c => linkifyCommand(c, c)).join("   ");

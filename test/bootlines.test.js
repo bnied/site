@@ -24,7 +24,7 @@ test("buildBootLines concatenates bios, ascii, profile, and the login fortune", 
   assert.ok(texts.some(t => t.includes("bnied@spaceduck.org")));
   // login fortune sits on a line-accent line, between two separators
   const fIdx = lines.findIndex(l => l.text.includes("It was DNS."));
-  assert.ok(fIdx > -1 && lines[fIdx].cls === "line-accent");
+  assert.ok(fIdx > -1 && lines[fIdx].cls.split(" ").includes("line-accent"));
   assert.equal(lines[fIdx - 1].cls, "line-separator");
   assert.equal(lines[fIdx + 1].cls, "line-separator");
   // and the rules are cut to the fortune's width, overhanging it evenly:

@@ -5,7 +5,7 @@
     { "text": "  (c) 2026 spaceduck.org — Phosphor Systems", "cls": "line-system" },
     { "text": "", "cls": "" },
     { "text": "  CPU .................. OK", "cls": "line-system", "delay": 70 },
-    { "type": "countup", "label": "  Memory Test ......... ", "target": 640, "unit": "K OK (enough for anybody)", "cls": "line-system", "delay": 70 },
+    { "type": "countup", "label": "  Memory Test .......... ", "target": 640, "unit": "K OK (enough for anybody)", "cls": "line-system", "delay": 70 },
     { "text": "  Detecting IDE drives . none", "cls": "line-system", "delay": 70 },
     { "text": "  Phosphor array ....... P1 green", "cls": "line-system", "delay": 70 },
     { "text": "  Calibrating scanlines  60Hz", "cls": "line-system", "delay": 70 },

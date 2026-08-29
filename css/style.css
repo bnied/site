@@ -396,6 +396,20 @@ html, body {
   text-shadow: 0 0 8px var(--p1-glow), 0 0 20px var(--p1-bloom);
 }
 
+/* The MOTD fortune is the one accent line long enough to wrap. Hang its
+   continuation under the text: the negative indent cancels the padding on the
+   first line, whose two literal spaces already place it, and wrapped lines take
+   the padding. Scoped to the fortune — most line-accent output is art or table
+   rows that start at column zero and would be pulled left. */
+.line-motd {
+  padding-left: 2ch;
+  text-indent: -2ch;
+  /* Wrap two columns short of the edge as well, so a fortune that fills the
+     width keeps the same two-column gutter it has on the left and the clipped
+     rules overhang it evenly at both ends. */
+  padding-right: 2ch;
+}
+
 .line-highlight {
   color: var(--highlight);
   text-shadow: 0 0 8px var(--amber-glow);
@@ -461,6 +475,11 @@ html, body {
   user-select: none;
   text-shadow: none;
   opacity: 0.6;
+  /* Rules are cut to the width of the text they bracket, which can overrun a
+     narrow viewport. Clip the overhang rather than inheriting #output's
+     pre-wrap, which drops the tail onto a second line as a stray stub. */
+  white-space: pre;
+  overflow: hidden;
 }
 
 .line-bullet {
