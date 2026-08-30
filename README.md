@@ -95,10 +95,22 @@ python3 -m http.server 8000
 
 ## Tests
 
-Pure logic (figlet, cowsay, the pipe engine) has unit tests run by Node's built-in runner — no dependencies, no build:
+Pure logic (figlet, cowsay, the pipe engine) and the render layer have unit tests run by Node's built-in runner — no dependencies, no build:
 
 ```bash
 node --test
+```
+
+CI runs the same suite on every push and pull request; see `.forgejo/workflows/test.yml`.
+
+## Deploying
+
+The site is static — serving the repo root is the whole deployment. One thing does need saying on the server, though: without a `Cache-Control` header, browsers cache JavaScript heuristically and keep running the previous build after a deploy. `deploy/nginx-cache.conf` is the policy that prevents that; include it from the nginx server block.
+
+Regenerate the no-JS fallback in `index.html` whenever section content changes:
+
+```bash
+npm run noscript
 ```
 
 ## License
