@@ -1,5 +1,7 @@
 # bnied.dev
 
+[![CI](https://source.tube/spaceduck/site/badges/workflows/test.yml/badge.svg)](https://source.tube/spaceduck/site/actions)
+
 Personal website with a CRT terminal aesthetic. Visitors interact via a command prompt to explore resume content, run easter eggs, and play DOOM.
 
 ## Commands
