@@ -6,6 +6,7 @@ import { addLine, escapeHTML, pad, scrollToBottom } from "../render.js";
 import { state } from "../state.js";
 import { cowsayText } from "../cowsay.js";
 import { resumeText } from "../textsources.js";
+import { highlightLiteral } from "../highlight.js";
 import { resumePdf } from "../resumepdf.js";
 
 export const RESUME_FILENAME = "Benjamin-Nied-Resume.pdf";
@@ -94,9 +95,7 @@ export function runGrep(pattern) {
     if (matches.length > 0) {
       addLine(`  <span class="line-accent">${escapeHTML(name)}:</span>`, null, true);
       matches.forEach(m => {
-        const regex = new RegExp(`(${escapeHTML(pattern)})`, "gi");
-        const highlighted = escapeHTML(m).replace(regex, '<span class="line-heading">$1</span>');
-        addLine(`    ${highlighted}`, null, true);
+        addLine(`    ${highlightLiteral(m, pattern, escapeHTML)}`, null, true);
       });
       matchCount += matches.length;
       addLine("", null, false);
