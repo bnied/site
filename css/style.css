@@ -511,6 +511,14 @@ html, body {
   content: none;
 }
 
+/* An unexpected exception out of a command — see runCommand in js/commands.js.
+   Distinct from line-highlight, which is ordinary "no such host" output: this
+   one means the site itself broke. */
+.line-error {
+  color: var(--error);
+  font-weight: 700;
+}
+
 .line-bullet {
   padding-left: 2ch;
 }

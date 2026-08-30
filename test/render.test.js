@@ -1,44 +1,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-// js/dom.js resolves its element references at module load, so the document has
-// to exist before js/render.js is imported — hence the dynamic import below.
-//
-// This is a stub, not a DOM: just enough of Element and Document for the render
-// layer, which only ever sets className/innerHTML, calls setAttribute, and
-// appends. Kept inline and minimal on purpose — the alternative is a jsdom
-// devDependency, and the repo currently installs nothing at all.
-function makeElement(tag = "div") {
-  return {
-    tagName: tag.toUpperCase(),
-    className: "",
-    innerHTML: "",
-    children: [],
-    attributes: {},
-    scrollTop: 0,
-    scrollHeight: 0,
-    setAttribute(k, v) { this.attributes[k] = String(v); },
-    getAttribute(k) { return k in this.attributes ? this.attributes[k] : null; },
-    appendChild(child) { this.children.push(child); return child; },
-    set textContent(v) {
-      // Browsers escape exactly these three when serializing a text node.
-      this.innerHTML = String(v)
-        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    },
-  };
-}
+import { installDom } from "./dom-stub.mjs";
 
-const elements = new Map();
-globalThis.document = {
-  getElementById: id => {
-    if (!elements.has(id)) elements.set(id, makeElement());
-    return elements.get(id);
-  },
-  createElement: tag => makeElement(tag),
-};
+// js/dom.js resolves its element references at module load, so the stub goes in
+// first and js/render.js is imported dynamically after it.
+const { byId } = installDom();
 
 const { addLine, addLines, addSection, renderCls, escapeHTML } = await import("../js/render.js");
-const output = document.getElementById("output");
+const output = byId.get("output");
 
 const reset = () => { output.children.length = 0; };
 const classes = el => el.className.split(" ").filter(Boolean);

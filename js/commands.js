@@ -76,7 +76,25 @@ function renderPlain(lines) {
   addLine("", null, false);
 }
 
+// A command that throws must not leave the terminal wedged. Every branch below
+// falls through to a single trailing scrollToBottom(), so an exception escaped
+// before it ran: output stopped mid-render, the view never scrolled, and
+// nothing said why. Report it on the line instead and keep the shell usable.
 export function runCommand(raw) {
+  try {
+    dispatch(raw);
+  } catch (err) {
+    const detail = err && err.message ? err.message : String(err);
+    addLine(`  internal error: ${escapeHTML(detail)}`, "line-error", true);
+    addLine("  the shell is still up — this one is a bug, not you", "line-comment", true);
+    addLine("", null, false);
+    scrollToBottom();
+    // The line above is for the visitor; the stack is for whoever is looking.
+    console.error("command failed:", raw, err);
+  }
+}
+
+function dispatch(raw) {
   const cmd = raw.trim().toLowerCase();
 
   const promptHTML = document.querySelector("#input-line .prompt").innerHTML;
