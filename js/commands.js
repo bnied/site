@@ -8,7 +8,7 @@ import { state } from "./state.js";
 import {
   runBtop, runDoom, runLs, runShutdown, runSL, runCmatrix, runTraceroute, runPing,
   runNeofetch, runGrep, runDockerPs, runKubectlPods, runGitLog, showCatPicture, runCowsay,
-  runDmesg, probeEnvironment, runResume, buildResume, runStartx,
+  runDmesg, probeEnvironment, runResume, buildResume,
 } from "./easter-eggs/index.js";
 import { hasPipe, runPipeline } from "./pipeline.js";
 import { linkifyCommand } from "./cmdlink.js";
@@ -401,7 +401,19 @@ function dispatch(raw) {
   } else if (cmd === "dmesg" || cmd === "dmesg -h" || cmd === "dmesg --human") {
     runDmesg();
   } else if (cmd === "startx" || cmd === "xinit") {
-    runStartx();
+    // Deferred, not imported at the top: the X session pulls in the window
+    // manager, the four clients, the xterm shell and the whole Netscape — 69K
+    // of the 188K of JavaScript here, for something most visitors never run.
+    // DOOM already loads js-dos this way. The catch matters because a dynamic
+    // import fails asynchronously, so runCommand's try/catch cannot see it.
+    import("./easter-eggs/startx.js")
+      .then(m => m.runStartx())
+      .catch(err => {
+        addLine("  xinit: unable to load the X server", "line-highlight", true);
+        addLine("", null, false);
+        scrollToBottom();
+        console.error("startx failed to load:", err);
+      });
   } else if (cmd === "twm") {
     addLine("  twm: unable to open display \"\"", "line-highlight", true);
     addLine("  (try 'startx')", "line-comment", true);
