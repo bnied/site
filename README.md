@@ -107,10 +107,12 @@ CI runs the same suite on every push and pull request; see `.forgejo/workflows/t
 
 The site is static — serving the repo root is the whole deployment. One thing does need saying on the server, though: without a `Cache-Control` header, browsers cache JavaScript heuristically and keep running the previous build after a deploy. `deploy/nginx-site.conf` carries the caching, compression and header policy — install it and `deploy/nginx-headers.conf` as nginx snippets and include the first from the server block. Both files explain themselves; the short version is that `root` must be declared at server level, and the headers snippet is included per-location because nginx `add_header` does not merge across scopes.
 
-Regenerate the no-JS fallback in `index.html` whenever section content changes:
+Regenerate the derived files whenever section content changes — both are
+committed, and their tests fail if they drift from `data/`:
 
 ```bash
-npm run noscript
+npm run noscript   # the <noscript> fallback inside index.html
+npm run llms       # llms.txt, the resume as plain markdown
 ```
 
 ## License
