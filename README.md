@@ -105,7 +105,7 @@ CI runs the same suite on every push and pull request; see `.forgejo/workflows/t
 
 ## Deploying
 
-The site is static — serving the repo root is the whole deployment. One thing does need saying on the server, though: without a `Cache-Control` header, browsers cache JavaScript heuristically and keep running the previous build after a deploy. `deploy/nginx-cache.conf` is the policy that prevents that; include it from the nginx server block.
+The site is static — serving the repo root is the whole deployment. One thing does need saying on the server, though: without a `Cache-Control` header, browsers cache JavaScript heuristically and keep running the previous build after a deploy. `deploy/nginx-site.conf` carries the caching and compression policy; include it from the nginx server block.
 
 Regenerate the no-JS fallback in `index.html` whenever section content changes:
 
