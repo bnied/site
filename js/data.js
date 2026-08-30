@@ -41,26 +41,34 @@ export async function loadData() {
 
   state.EXP_KEYS = Object.keys(state.experienceDetail);
   state.COMMANDS = [
-    "about", "skills", "experience", "projects", "education", "contact",
-    "all", "clear", "help", "theme", "crt", "figlet", "lolcat",
-    "cat", "echo", "fortune", "cowsay", "neofetch", "ls", "uname", "whoami",
-    "pwd", "hostname", "date", "uptime", "history", "doom", "btop", "top",
-    "htop", "sl", "cmatrix", "traceroute", "ping", "grep", "man", "ssh",
-    "curl", "make", "wget", "reboot", "shutdown", "poweroff", "halt", "exit",
-    "logout", "vim", "vi", "emacs", "nano", "sudo", "su", "cd", "rm", "docker",
-    "kubectl", "git", "alias", "ps", "free", "df", "yes", "who", "kill",
-    "killall", "passwd", "chmod", "chown", "telnet", "dmesg", "resume",
-    "startx", "xinit", "twm", "netscape", "xeyes", "xclock",
+    ...BASE_COMMANDS,
     ...state.EXP_KEYS.map(k => "experience " + k),
     ...state.THEME_NAMES.map(t => "theme " + t),
   ];
-
-  // The documented surface, used only for "did you mean?" on an unknown
-  // command. Deliberately excludes the easter-egg decoys above: those are
-  // meant to be stumbled into, and offering `su` for a typo is just noise.
-  state.REAL_COMMANDS = [
-    "about", "skills", "experience", "projects", "education", "contact",
-    "resume", "help", "clear", "all", "theme", "crt",
-    "figlet", "lolcat", "cowsay", "fortune", "neofetch", "cat", "echo",
-  ];
+  state.REAL_COMMANDS = REAL_COMMANDS;
 }
+
+// Everything Tab completes, decoys included, minus the entries derived at load
+// time from the data (experience roles, theme names). Exported so tests can
+// check it against data/help.json without running loadData().
+export const BASE_COMMANDS = [
+  "about", "skills", "experience", "projects", "education", "contact",
+  "all", "clear", "help", "theme", "crt", "figlet", "lolcat",
+  "cat", "echo", "fortune", "cowsay", "neofetch", "ls", "uname", "whoami",
+  "pwd", "hostname", "date", "uptime", "history", "doom", "btop", "top",
+  "htop", "sl", "cmatrix", "traceroute", "ping", "grep", "man", "ssh",
+  "curl", "make", "wget", "reboot", "shutdown", "poweroff", "halt", "exit",
+  "logout", "vim", "vi", "emacs", "nano", "sudo", "su", "cd", "rm", "docker",
+  "kubectl", "git", "alias", "ps", "free", "df", "yes", "who", "kill",
+  "killall", "passwd", "chmod", "chown", "telnet", "dmesg", "resume",
+  "startx", "xinit", "twm", "netscape", "xeyes", "xclock",
+];
+
+// The documented surface, used only for "did you mean?" on an unknown command.
+// Deliberately excludes the easter-egg decoys above: those are meant to be
+// stumbled into, and offering `su` for a typo is just noise.
+export const REAL_COMMANDS = [
+  "about", "skills", "experience", "projects", "education", "contact",
+  "resume", "help", "clear", "all", "theme", "crt",
+  "figlet", "lolcat", "cowsay", "fortune", "neofetch", "cat", "echo",
+];
