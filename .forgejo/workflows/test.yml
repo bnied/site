@@ -1,0 +1,33 @@
+# CI for SourceTube (Forgejo Actions).
+#
+# Runs on UBI 10 — RHEL 10 userland, matching the AlmaLinux 10.x prod server.
+# The nodejs-22 variant ships
+# Node, so there is no setup-node step, and the suite is node --test over plain
+# ESM with no dependencies, so there is nothing to install or cache.
+#
+# runs-on must match a label the runner advertises; Forgejo has no fixed label
+# list, so this is instance-specific. "docker" is the common default. If the run
+# sits queued forever, that label is wrong. If it fails on checkout, the
+# instance resolves uses: against a registry that lacks the action.
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: docker
+    container:
+      image: registry.access.redhat.com/ubi10/nodejs-22
+    steps:
+      - uses: actions/checkout@v4
+
+      # Fails if index.html's <noscript> block has drifted from the section
+      # JSON. test/noscript.test.js asserts the same thing; this runs first so
+      # the fix (npm run noscript) is the message you see, not an assertion.
+      - name: check the no-JS fallback is current
+        run: node tools/gen-noscript.mjs --check
+
+      - run: npm test
