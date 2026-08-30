@@ -8,7 +8,7 @@ import { state } from "./state.js";
 import {
   runBtop, runDoom, runLs, runShutdown, runSL, runCmatrix, runTraceroute, runPing,
   runNeofetch, runGrep, runDockerPs, runKubectlPods, runGitLog, showCatPicture, runCowsay,
-  runDmesg, probeEnvironment, runResume, buildResume, runStartx,
+  runDmesg, probeEnvironment, runResume, buildResume,
 } from "./easter-eggs/index.js";
 import { hasPipe, runPipeline } from "./pipeline.js";
 import { linkifyCommand } from "./cmdlink.js";
@@ -41,15 +41,27 @@ function pipelineCtx() {
 }
 
 // Wrap each non-space character of a RAW (un-escaped) line in a rainbow span.
+// Each character carries its hue as data, not as a style attribute: the colour
+// is applied through the CSSOM by paintRainbow below. A style attribute in
+// markup is inline CSS as far as CSP is concerned and would force
+// style-src 'unsafe-inline' for the whole site; assigning element.style from
+// script is not restricted.
 function rainbowLine(text, rowIdx, start) {
   let html = "";
   for (let i = 0; i < text.length; i++) {
     const ch = text[i];
     if (ch === " ") { html += " "; continue; }
     const hue = Math.round((start + i * LOLCAT_COL_STEP + rowIdx * LOLCAT_ROW_STEP) % 360);
-    html += `<span style="color:hsl(${hue},100%,70%)">${escapeHTML(ch)}</span>`;
+    html += `<span data-hue="${hue}">${escapeHTML(ch)}</span>`;
   }
   return html;
+}
+
+export function paintRainbow(lineEl) {
+  if (!lineEl) return;
+  lineEl.querySelectorAll("[data-hue]").forEach(span => {
+    span.style.color = `hsl(${span.dataset.hue},100%,70%)`;
+  });
 }
 
 function renderPipelineResult(result) {
@@ -61,7 +73,7 @@ function renderPipelineResult(result) {
   const start = Math.floor(Math.random() * 360);
   result.lines.forEach((line, i) => {
     if (result.colorize) {
-      addLine("  " + rainbowLine(line, i, start), null, true);
+      paintRainbow(addLine("  " + rainbowLine(line, i, start), null, true));
     } else {
       addLine("  " + escapeHTML(line), null, true);
     }
@@ -389,7 +401,19 @@ function dispatch(raw) {
   } else if (cmd === "dmesg" || cmd === "dmesg -h" || cmd === "dmesg --human") {
     runDmesg();
   } else if (cmd === "startx" || cmd === "xinit") {
-    runStartx();
+    // Deferred, not imported at the top: the X session pulls in the window
+    // manager, the four clients, the xterm shell and the whole Netscape — 69K
+    // of the 188K of JavaScript here, for something most visitors never run.
+    // DOOM already loads js-dos this way. The catch matters because a dynamic
+    // import fails asynchronously, so runCommand's try/catch cannot see it.
+    import("./easter-eggs/startx.js")
+      .then(m => m.runStartx())
+      .catch(err => {
+        addLine("  xinit: unable to load the X server", "line-highlight", true);
+        addLine("", null, false);
+        scrollToBottom();
+        console.error("startx failed to load:", err);
+      });
   } else if (cmd === "twm") {
     addLine("  twm: unable to open display \"\"", "line-highlight", true);
     addLine("  (try 'startx')", "line-comment", true);

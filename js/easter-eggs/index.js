@@ -1,5 +1,9 @@
 // Barrel module re-exporting every easter-egg handler. Consumers
 // (commands.js) import from here rather than from each file individually.
+//
+// startx is deliberately absent: commands.js imports it dynamically so the X11
+// and Netscape modules stay out of the initial bundle. Re-exporting it here
+// would pull them back in statically and undo that.
 
 export { runBtop } from "./btop.js";
 export { runDoom } from "./doom.js";
@@ -8,7 +12,6 @@ export { runShutdown } from "./shutdown.js";
 export { runSL } from "./sl.js";
 export { runCmatrix } from "./cmatrix.js";
 export { runDmesg, probeEnvironment } from "./dmesg.js";
-export { runStartx } from "./startx.js";
 export { runTraceroute } from "./traceroute.js";
 export { runPing } from "./ping.js";
 export {
