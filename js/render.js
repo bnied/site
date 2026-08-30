@@ -19,6 +19,9 @@ export function addLine(text, cls, animate) {
     div.setAttribute("aria-hidden", "true");
   }
   output.appendChild(div);
+  // Returned so a caller can reach into the line it just added — lolcat paints
+  // its hues through the CSSOM rather than as inline style attributes.
+  return div;
 }
 
 // A line carrying a `cmd` field gets that command name wrapped as a clickable

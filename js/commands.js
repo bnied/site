@@ -41,15 +41,27 @@ function pipelineCtx() {
 }
 
 // Wrap each non-space character of a RAW (un-escaped) line in a rainbow span.
+// Each character carries its hue as data, not as a style attribute: the colour
+// is applied through the CSSOM by paintRainbow below. A style attribute in
+// markup is inline CSS as far as CSP is concerned and would force
+// style-src 'unsafe-inline' for the whole site; assigning element.style from
+// script is not restricted.
 function rainbowLine(text, rowIdx, start) {
   let html = "";
   for (let i = 0; i < text.length; i++) {
     const ch = text[i];
     if (ch === " ") { html += " "; continue; }
     const hue = Math.round((start + i * LOLCAT_COL_STEP + rowIdx * LOLCAT_ROW_STEP) % 360);
-    html += `<span style="color:hsl(${hue},100%,70%)">${escapeHTML(ch)}</span>`;
+    html += `<span data-hue="${hue}">${escapeHTML(ch)}</span>`;
   }
   return html;
+}
+
+export function paintRainbow(lineEl) {
+  if (!lineEl) return;
+  lineEl.querySelectorAll("[data-hue]").forEach(span => {
+    span.style.color = `hsl(${span.dataset.hue},100%,70%)`;
+  });
 }
 
 function renderPipelineResult(result) {
@@ -61,7 +73,7 @@ function renderPipelineResult(result) {
   const start = Math.floor(Math.random() * 360);
   result.lines.forEach((line, i) => {
     if (result.colorize) {
-      addLine("  " + rainbowLine(line, i, start), null, true);
+      paintRainbow(addLine("  " + rainbowLine(line, i, start), null, true));
     } else {
       addLine("  " + escapeHTML(line), null, true);
     }

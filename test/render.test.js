@@ -85,6 +85,12 @@ test("addLines linkifies a line carrying a cmd", () => {
   assert.match(output.children[0].innerHTML, /data-cmd="about"/);
 });
 
+test("addLine returns the element it appended", () => {
+  reset();
+  const div = addLine("x", null, false);
+  assert.equal(div, output.children[0]);
+});
+
 test("escapeHTML escapes markup", () => {
   assert.equal(escapeHTML('<script>&"'), "&lt;script&gt;&amp;\"");
 });

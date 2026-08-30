@@ -85,3 +85,14 @@ test("a working command is untouched by the wrapper", () => {
   assert.ok(html.includes("  hello"), "section content should render");
   assert.ok(!html.some(h => h.includes("internal error")), "no error line on success");
 });
+
+test("lolcat carries hues as data, not as inline style attributes", () => {
+  reset();
+  state.sections = {};
+  quietly(() => runCommand("lolcat hi"));
+  const painted = lines().find(l => l.html.includes("data-hue"));
+  assert.ok(painted, "characters should be wrapped with a hue");
+  // A style attribute in markup is inline CSS to CSP; the colour is applied
+  // through the CSSOM instead, which style-src does not restrict.
+  assert.ok(!painted.html.includes("style="), "no inline style attribute");
+});
