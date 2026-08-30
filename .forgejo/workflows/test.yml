@@ -1,15 +1,18 @@
 # CI for SourceTube (Forgejo Actions).
 #
 # Runs on UBI 10 — RHEL 10 userland, matching the AlmaLinux 10.x prod server.
-# The nodejs-22 variant ships
-# Node, so there is no setup-node step, and the suite is node --test over plain
-# ESM with no dependencies, so there is nothing to install or cache.
+# The nodejs-22 image ships Node, so there is no setup-node step, and the suite
+# is node --test over plain ESM with no dependencies: nothing to install, and
+# nothing to cache.
 #
-# runs-on must match a label the runner advertises; Forgejo has no fixed label
-# list, so this is instance-specific. "docker" is the common default. If the run
-# sits queued forever, that label is wrong. If it fails on checkout, the
-# instance resolves uses: against a registry that lacks the action.
-name: test
+# The commit status Forgejo publishes is "<workflow> / <job> (<event>)", so the
+# two names below are the contract that branch protection matches on — here,
+# "ci / tests (pull_request)". Renaming either half silently leaves protected
+# PRs waiting on a check that will never report, so treat them as permanent.
+#
+# runs-on must match a label the instance's runner advertises; Forgejo has no
+# fixed label list. "docker" is what source.tube answers to.
+name: ci
 
 on:
   push:
@@ -18,6 +21,7 @@ on:
 
 jobs:
   test:
+    name: tests
     runs-on: docker
     container:
       image: registry.access.redhat.com/ubi10/nodejs-22
