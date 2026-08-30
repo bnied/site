@@ -1,0 +1,13 @@
+# bnied.dev — a personal site. Nothing here is off limits to crawlers.
+# This file exists mainly so a crawl does not take a 404 on every visit.
+
+User-agent: *
+Allow: /
+
+# The DOOM bundle and the vendored emulator are several megabytes of binary
+# with nothing to index.
+Disallow: /assets/
+Disallow: /vendor/
+
+# No Sitemap line: there is one page, and pointing at a sitemap.xml that does
+# not exist would recreate the 404 this file exists to avoid.
