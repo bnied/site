@@ -1685,8 +1685,12 @@ html[data-crt="max"] #screen { animation: flicker 8s infinite, syncRoll 24s ease
 .nf-sep { color: var(--prompt-sep, #0a660a); }
 .nf-path { color: var(--prompt-path, #ffb000); }
 .nf-dollar { color: var(--prompt-dollar, #20cc20); }
+/* The error line is the page's heading, so it is an <h1>. font-size is pinned
+   to the body's: a browser's default 2em would break the terminal illusion,
+   and the reset above already zeroes the heading margin. */
 .nf-err {
   color: var(--highlight, #cc8d00);
+  font-size: inherit;
   font-weight: 700;
   margin-bottom: 1.6rem;
 }

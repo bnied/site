@@ -31,7 +31,13 @@ jobs:
       # Fails if index.html's <noscript> block has drifted from the section
       # JSON. test/noscript.test.js asserts the same thing; this runs first so
       # the fix (npm run noscript) is the message you see, not an assertion.
+      # Both generators write files that are committed. Run their --check ahead
+      # of the suite so a stale file reports the command that fixes it; the
+      # tests assert the same thing, but only as a failed assertion.
       - name: check the no-JS fallback is current
         run: node tools/gen-noscript.mjs --check
+
+      - name: check llms.txt and md/ are current
+        run: node tools/gen-llms.mjs --check
 
       - run: npm test
