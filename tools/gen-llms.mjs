@@ -13,13 +13,17 @@
 //
 //   node tools/gen-llms.mjs          # rewrite llms.txt and the .md files
 //   node tools/gen-llms.mjs --check  # exit 1 if any would change
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { IDENTITY, DATES_RE, entries as flatten } from "../js/sections-model.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SITE = "https://bnied.dev";
+// The generated markdown lives together rather than scattered through the web
+// root, and mirrors the commands: md/<command>.md, md/experience/<role>.md for
+// what `experience <role>` prints.
+const MD = "md";
 
 // Keep inline HTML so the anchors survive; they become markdown links below.
 const entries = block => flatten(block, { keepHtml: true });
@@ -146,18 +150,34 @@ export function sectionMd(cmd, sections, experience) {
     subheads: SUBHEADS[cmd] || [],
     skipTitle: true,
   }));
-  // `experience` lists the roles; the detail blocks behind `experience <role>`
-  // hold the bullets, so they belong in the same file.
-  if (cmd === "experience") {
-    for (const block of Object.values(experience)) {
-      parts.push(...blockMd(block, { level: 2 }));
-    }
-  }
   return tidy(parts);
 }
 
+/** One file per role, matching what `experience <role>` prints. */
+export function roleMd(block) {
+  const es = entries(block);
+  const title = properCase(mdText(es.find(e => e.cls === "line-heading")?.text || "Role"));
+  const parts = [`# ${title}`, ""];
+  parts.push(...blockMd(block, { skipTitle: true }));
+  return tidy(parts);
+}
+
+/** "Site Reliability Engineer, 2021 - Present" for the index. */
+function roleBlurb(block) {
+  const line = entries(block).find(e => e.cls === "line-highlight");
+  if (!line) return "";
+  const text = mdText(line.text);
+  const m = DATES_RE.exec(text);
+  return m ? `${m[1]}, ${m[2]}` : text;
+}
+
+function roleTitle(block) {
+  const line = entries(block).find(e => e.cls === "line-heading");
+  return properCase(mdText(line?.text || "Role"));
+}
+
 /** The index itself: H1, summary, then links to the files above. */
-export function llmsIndex() {
+export function llmsIndex(experience) {
   const parts = [
     `# ${IDENTITY.name}`,
     "",
@@ -168,16 +188,26 @@ export function llmsIndex() {
     "",
   ];
   for (const s of SECTIONS) {
-    parts.push(`- [${s.title}](${SITE}/${s.cmd}.md): ${s.blurb}`);
+    parts.push(`- [${s.title}](${SITE}/${MD}/${s.cmd}.md): ${s.blurb}`);
+  }
+  // What `experience <role>` prints: the bullets behind each job. Listed
+  // separately because the section files are the overview and these are the
+  // depth beneath it.
+  parts.push("", "## Roles", "");
+  for (const [key, block] of Object.entries(experience)) {
+    parts.push(`- [${roleTitle(block)}](${SITE}/${MD}/experience/${key}.md): ${roleBlurb(block)}`);
   }
   return tidy(parts);
 }
 
 /** Every generated file, as path (relative to the repo root) -> contents. */
 export function llmsFiles(sections, experience) {
-  const files = new Map([["llms.txt", llmsIndex()]]);
+  const files = new Map([["llms.txt", llmsIndex(experience)]]);
   for (const s of SECTIONS) {
-    files.set(`${s.cmd}.md`, sectionMd(s.cmd, sections, experience));
+    files.set(`${MD}/${s.cmd}.md`, sectionMd(s.cmd, sections, experience));
+  }
+  for (const [key, block] of Object.entries(experience)) {
+    files.set(`${MD}/experience/${key}.md`, roleMd(block));
   }
   return files;
 }
@@ -205,7 +235,10 @@ if (process.argv[1] && import.meta.url === `file://${process.argv[1]}`) {
   } else if (!stale.length) {
     console.log(`${files.size} generated files already current`);
   } else {
-    for (const path of stale) writeFileSync(join(ROOT, path), files.get(path));
+    for (const path of stale) {
+      mkdirSync(dirname(join(ROOT, path)), { recursive: true });
+      writeFileSync(join(ROOT, path), files.get(path));
+    }
     console.log(`updated: ${stale.join(", ")}`);
   }
 }

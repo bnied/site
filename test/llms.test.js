@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { llmsFiles, llmsIndex, sectionMd, readSources } from "../tools/gen-llms.mjs";
+import { llmsFiles, llmsIndex, sectionMd, roleMd, readSources } from "../tools/gen-llms.mjs";
 
 const { sections, experience, read } = readSources();
 const files = llmsFiles(sections, experience);
@@ -12,22 +12,48 @@ test("every generated file is current with the section data", () => {
 });
 
 test("llms.txt is a link index, per the spec", () => {
-  const lines = llmsIndex().split("\n");
+  const lines = llmsIndex(experience).split("\n");
   assert.equal(lines[0], "# Benjamin Nied", "an H1 name comes first");
   assert.ok(lines[2].startsWith("> "), "then a summary blockquote");
-  assert.ok(llmsIndex().includes("## Resume"), "then a section of links");
+  const index = llmsIndex(experience);
+  assert.ok(index.includes("## Resume"), "then a section of links");
   // one link per section, each pointing at a file this generator writes
   for (const cmd of ["about", "skills", "experience", "projects", "education", "contact"]) {
-    assert.match(llmsIndex(), new RegExp(`\\]\\(https://bnied\\.dev/${cmd}\\.md\\)`), `missing link to ${cmd}.md`);
-    assert.ok(files.has(`${cmd}.md`), `${cmd}.md is linked but not generated`);
+    assert.match(index, new RegExp(`\\]\\(https://bnied\\.dev/md/${cmd}\\.md\\)`), `missing link to ${cmd}.md`);
+    assert.ok(files.has(`md/${cmd}.md`), `md/${cmd}.md is linked but not generated`);
+  }
+  // and one per role, matching `experience <role>`
+  assert.ok(index.includes("## Roles"), "roles are indexed separately");
+  for (const key of Object.keys(experience)) {
+    assert.match(index, new RegExp(`\\]\\(https://bnied\\.dev/md/experience/${key}\\.md\\)`), `missing link to ${key}`);
+    assert.ok(files.has(`md/experience/${key}.md`), `md/experience/${key}.md is linked but not generated`);
+  }
+  // every link in the index resolves to a generated file
+  for (const [, url] of index.matchAll(/\]\(https:\/\/bnied\.dev\/([^)]+)\)/g)) {
+    assert.ok(files.has(url), `index links ${url}, which is not generated`);
   }
 });
 
 test("the markdown files are named after the commands that print them", () => {
   assert.deepEqual(
-    [...files.keys()].filter(k => k.endsWith(".md")).sort(),
-    ["about.md", "contact.md", "education.md", "experience.md", "projects.md", "skills.md"],
+    [...files.keys()].filter(k => k.startsWith("md/") && !k.includes("/experience/")).sort(),
+    ["md/about.md", "md/contact.md", "md/education.md", "md/experience.md",
+     "md/projects.md", "md/skills.md"],
   );
+  // `experience <role>` maps to md/experience/<role>.md, key for key
+  assert.deepEqual(
+    [...files.keys()].filter(k => k.includes("/experience/")).sort(),
+    Object.keys(experience).map(k => `md/experience/${k}.md`).sort(),
+  );
+});
+
+test("each role file carries its own bullets", () => {
+  const cassandra = roleMd(experience["apple-cassandra"]);
+  assert.match(cassandra, /^# Apple \/\/ ASE Cassandra$/m);
+  assert.match(cassandra, /^\*\*Site Reliability Engineer — 2021 - Present\*\*$/m);
+  assert.match(cassandra, /^- Owned the group's Slackbot/m);
+  // ...and only its own: the summary file no longer inlines them
+  assert.ok(!sectionMd("experience", sections, experience).includes("Owned the group's Slackbot"));
 });
 
 test("shouted headings are cased properly, without mangling names", () => {
@@ -35,9 +61,10 @@ test("shouted headings are cased properly, without mangling names", () => {
   assert.match(exp, /^## Apple — 2018 - Present$/m, "APPLE -> Apple");
   assert.match(exp, /^## LinkedIn, Inc — 2016 - 2018$/m, "LINKEDIN, INC -> LinkedIn, Inc");
   assert.match(exp, /^## Work Market, Inc — 2015 - 2016$/m);
-  // acronyms stay shouted, and an already-cased word is never touched
-  assert.match(exp, /^## Apple \/\/ ASE Cassandra$/m);
-  assert.match(exp, /^## Apple \/\/ ACI Postgres$/m);
+  // acronyms stay shouted, and an already-cased word is never touched —
+  // the per-role headings live in their own files now
+  assert.match(roleMd(experience["apple-cassandra"]), /^# Apple \/\/ ASE Cassandra$/m);
+  assert.match(roleMd(experience["apple-postgres"]), /^# Apple \/\/ ACI Postgres$/m);
   // project names are lowercase or camel on purpose
   const proj = sectionMd("projects", sections, experience);
   assert.match(proj, /^## neofsn$/m);
@@ -53,10 +80,12 @@ test("a section's own subheadings survive past its title", () => {
   assert.match(proj, /^## Contributions$/m, "but a later heading is not");
 });
 
-test("experience carries the detail behind each role", () => {
+test("the experience summary lists every employer", () => {
   const exp = sectionMd("experience", sections, experience);
-  assert.match(exp, /^- Owned the group's Slackbot/m);
-  assert.match(exp, /^\*\*Site Reliability Engineer — 2021 - Present\*\*$/m);
+  for (const employer of ["Apple", "LinkedIn, Inc", "Work Market, Inc",
+                          "Shutterstock, Inc", "Datapipe, Inc"]) {
+    assert.ok(exp.includes(`## ${employer}`), `missing ${employer}`);
+  }
 });
 
 test("anchors become markdown links", () => {
