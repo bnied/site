@@ -125,7 +125,14 @@ export function initInput(runCommand) {
     }
   });
 
-  document.addEventListener("click", () => cmdInput.focus());
+  // Click-to-focus, except when the click just finished a selection: focusing
+  // the input collapses it, so dragging across a line of output to copy it
+  // would clear the moment the mouse came up. The xterm inside `startx` has
+  // guarded this since it was written; the real terminal never did.
+  document.addEventListener("click", () => {
+    if (String(window.getSelection() || "")) return;
+    cmdInput.focus();
+  });
 
   // Caret moves that don't change the value — arrow keys, Home/End, clicking
   // into the text — fire selectionchange but not input. Re-sync the cursor so
