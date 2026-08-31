@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "noscript": "node tools/gen-noscript.mjs"
+    "noscript": "node tools/gen-noscript.mjs",
+    "llms": "node tools/gen-llms.mjs"
   }
 }

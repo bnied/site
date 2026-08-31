@@ -1667,3 +1667,29 @@ html[data-crt="max"] #screen { animation: flicker 8s infinite, syncRoll 24s ease
 #noscript ul { margin: 0 auto 1rem; padding-left: 1.3rem; }
 #noscript li { margin-bottom: 0.35rem; }
 #noscript a { color: var(--link, #ffb000); }
+
+/* ═══ 404 ═════════════════════════════════════════════════════
+   Served by nginx for any unknown path (error_page 404). Static and
+   module-free — it should paint once and get out of the way — so it reuses the
+   variables above rather than shipping a second stylesheet. */
+#notfound {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 12vh 6vw;
+  color: var(--text, #20cc20);
+  font-size: 15px;
+  line-height: 1.8;
+}
+.nf-line { margin-bottom: 1.6rem; }
+.nf-prompt { font-weight: 700; color: var(--prompt-user, #33ff33); }
+.nf-sep { color: var(--prompt-sep, #0a660a); }
+.nf-path { color: var(--prompt-path, #ffb000); }
+.nf-dollar { color: var(--prompt-dollar, #20cc20); }
+.nf-err {
+  color: var(--highlight, #cc8d00);
+  font-weight: 700;
+  margin-bottom: 1.6rem;
+}
+.nf-hint { color: var(--comment, #0a660a); }
+#notfound a { color: var(--link, #ffb000); }
+#notfound code { color: var(--text-bright, #33ff33); }

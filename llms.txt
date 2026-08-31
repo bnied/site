@@ -1,0 +1,23 @@
+# Benjamin Nied
+
+> Site Reliability Engineer. https://bnied.dev is an interactive CRT terminal; each section
+> below is what one of its commands prints, as plain markdown.
+
+## Resume
+
+- [About](https://bnied.dev/md/about.md): Who I am and what I do.
+- [Skills](https://bnied.dev/md/skills.md): Technologies, grouped by area.
+- [Experience](https://bnied.dev/md/experience.md): Employment history, with the detail behind each role.
+- [Projects](https://bnied.dev/md/projects.md): Personal projects and open-source contributions.
+- [Education](https://bnied.dev/md/education.md): Degrees and coursework.
+- [Contact](https://bnied.dev/md/contact.md): Email and profiles.
+
+## Roles
+
+- [Apple // ASE Cassandra](https://bnied.dev/md/experience/apple-cassandra.md): Site Reliability Engineer, 2021 - Present
+- [Apple // ACI Postgres](https://bnied.dev/md/experience/apple-postgres.md): Site Reliability Engineer, 2020 - 2021
+- [Apple // ACI Observability](https://bnied.dev/md/experience/apple-observability.md): Site Reliability Engineer, 2018 - 2020
+- [LinkedIn, Inc](https://bnied.dev/md/experience/linkedin.md): Senior Site Reliability Engineer, 2016 - 2018
+- [Work Market, Inc](https://bnied.dev/md/experience/workmarket.md): Senior DevOps Engineer, 2015 - 2016
+- [Shutterstock, Inc](https://bnied.dev/md/experience/shutterstock.md): Site Reliability Engineer, 2013 - 2015
+- [Datapipe, Inc](https://bnied.dev/md/experience/datapipe.md): Datacenter Technician / Operational Support, 2008 - 2013

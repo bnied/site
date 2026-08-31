@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 — Benjamin Nied</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- No scripts at all: a 404 should render in one paint and get out of the
+       way, which is worth more than echoing the path the visitor asked for.
+       crt-boot.js is absent deliberately too — no [data-crt] rule affects this
+       page, so it would have been a blocking request for nothing. Styles come
+       from the shared stylesheet because the CSP forbids inline CSS. -->
+  <div id="notfound">
+    <p class="nf-line"><span class="nf-prompt">visitor@bnied.dev<span class="nf-sep">:</span><span class="nf-path">~</span><span class="nf-dollar">$</span></span> cat 404</p>
+    <p class="nf-err">cat: 404: No such file or directory</p>
+    <p class="nf-hint">The page you asked for is not on this disk.</p>
+    <p class="nf-hint"><a href="/">Return to the terminal</a> and type <code>help</code>.</p>
+  </div>
+</body>
+</html>
