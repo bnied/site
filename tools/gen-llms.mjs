@@ -1,28 +1,39 @@
-// gen-llms.mjs — build /llms.txt from the section JSON.
+// gen-llms.mjs — build /llms.txt and the per-section markdown it points at.
 //
-// llms.txt (https://llmstxt.org) is specified as a link index: an H1, a summary
-// blockquote, then curated links to markdown versions of a site's pages. That
-// shape assumes a documentation site. This is one page, and its only markdown
-// version would be the file being generated — so a link index would point at
-// index.html, which is a JavaScript shell with nothing readable in it.
+// llms.txt (https://llmstxt.org) is a link index: an H1, a summary blockquote,
+// then sections of links to markdown versions of a site's pages. This site has
+// one HTML page, but it is not really one document — it is six sections a
+// visitor reaches by typing `about`, `skills`, `experience` and so on. So each
+// command gets its markdown file at the matching path, and llms.txt indexes
+// them: `about` in the terminal and /about.md are the same content.
 //
-// The useful adaptation is to make llms.txt *carry* the resume rather than
-// point at it. Generated from the same data the terminal renders, so there is
-// no second copy of the resume to keep in sync, and test/llms.test.js fails
-// when llms.txt drifts from data/.
+// Everything is generated from the section JSON the terminal renders, so there
+// is no second copy of the resume to keep in sync, and test/llms.test.js fails
+// when any generated file drifts.
 //
-//   node tools/gen-llms.mjs          # rewrite llms.txt
-//   node tools/gen-llms.mjs --check  # exit 1 if it would change
-import { readFileSync, writeFileSync } from "node:fs";
+//   node tools/gen-llms.mjs          # rewrite llms.txt and the .md files
+//   node tools/gen-llms.mjs --check  # exit 1 if any would change
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { IDENTITY, DATES_RE, entries as flatten } from "../js/sections-model.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const SITE = "https://bnied.dev/";
+const SITE = "https://bnied.dev";
 
 // Keep inline HTML so the anchors survive; they become markdown links below.
 const entries = block => flatten(block, { keepHtml: true });
+
+// The sections a visitor can type, in the order `all` prints them. The file
+// name is the command name — that is the whole naming rule.
+const SECTIONS = [
+  { cmd: "about", title: "About", blurb: "Who I am and what I do." },
+  { cmd: "skills", title: "Skills", blurb: "Technologies, grouped by area." },
+  { cmd: "experience", title: "Experience", blurb: "Employment history, with the detail behind each role." },
+  { cmd: "projects", title: "Projects", blurb: "Personal projects and open-source contributions." },
+  { cmd: "education", title: "Education", blurb: "Degrees and coursework." },
+  { cmd: "contact", title: "Contact", blurb: "Email and profiles." },
+];
 
 // <a href="https://x">label</a> -> [label](https://x). Any other tag is stripped
 // rather than escaped: this is markdown, and a stray <b> helps nobody.
@@ -33,12 +44,24 @@ function mdText(s) {
     .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 }
 
-// Section titles are shouted in the terminal ("ABOUT", "EXPERIENCE"). Soften
-// only the ones that are entirely uppercase — "APPLE // ASE Cassandra" is a
-// heading too, and lowercasing it would mangle the name.
-function titleCase(s) {
-  if (!/^[^a-z]+$/.test(s)) return s;
-  return s.replace(/[A-Z]+/g, w => w.charAt(0) + w.slice(1).toLowerCase());
+// Words kept as written when a shouted heading is re-cased.
+const ACRONYMS = new Set(["ASE", "ACI", "SRE", "CKA", "IT", "QA"]);
+// Brands whose casing is not just a capital letter.
+const BRANDS = new Map([["LINKEDIN", "LinkedIn"]]);
+
+// The terminal shouts its headings — "ABOUT", "APPLE // ASE Cassandra". Case
+// them properly for markdown, word by word: a word containing any lowercase is
+// already cased and left alone (Cassandra, BSPRenderer, neofsn), a known
+// acronym stays shouted, a known brand gets its real casing, and anything else
+// entirely uppercase becomes Capitalized.
+function properCase(text) {
+  return text.replace(/[A-Za-z][A-Za-z']*/g, word => {
+    if (/[a-z]/.test(word)) return word;
+    if (ACRONYMS.has(word)) return word;
+    const brand = BRANDS.get(word);
+    if (brand) return brand;
+    return word.charAt(0) + word.slice(1).toLowerCase();
+  });
 }
 
 // Lines that exist only to work the prompt, listed explicitly rather than
@@ -50,7 +73,7 @@ function titleCase(s) {
 //
 // Add to this list when a new prompt-only line appears. Anything not named
 // here is treated as content, which is the safer default: a stray line of
-// navigation in llms.txt is noise, a missing job is not.
+// navigation is noise, a missing job is not.
 const TERMINAL_ONLY = [
   "For details, run: experience",
 ];
@@ -65,12 +88,21 @@ const isTerminalOnly = text => TERMINAL_ONLY.some(prefix => text.startsWith(pref
  * Everything else accented is emphasis, not structure, so a tagline stays a
  * paragraph rather than becoming a heading.
  */
-function blockMd(block, { level = 2, subheads = [] } = {}) {
+function blockMd(block, { level = 2, subheads = [], skipTitle = false } = {}) {
   const out = [];
+  let titleSkipped = false;
   for (const e of entries(block)) {
     const text = mdText(e.text);
     if (!text.trim()) continue;
     if (e.cls === "line-comment" && isTerminalOnly(text)) continue;
+    // The file's own H1 already names the section, so its first heading is
+    // redundant — but only the first. PROJECTS also carries a CONTRIBUTIONS
+    // heading partway down, and dropping that ran open-source contributions
+    // straight on from personal projects with nothing between them.
+    if (e.cls === "line-heading" && skipTitle && !titleSkipped) {
+      titleSkipped = true;
+      continue;
+    }
 
     if (e.cls === "line-bullet") {
       out.push(`- ${text}`);
@@ -79,12 +111,15 @@ function blockMd(block, { level = 2, subheads = [] } = {}) {
     // "APPLE 2018 - Present": split the right-aligned date column off so it
     // reads as a date rather than a run of spaces.
     const m = DATES_RE.exec(text);
-    const body = m ? `${m[1]} — ${m[2]}` : text;
+    const heading = e.cls === "line-heading" || subheads.includes(e.cls);
+    const body = m
+      ? `${heading ? properCase(m[1]) : m[1]} — ${m[2]}`
+      : (heading ? properCase(text) : text);
 
     if (e.cls === "line-heading") {
-      out.push("", `${"#".repeat(level)} ${titleCase(body)}`, "");
+      out.push("", `${"#".repeat(level)} ${body}`, "");
     } else if (subheads.includes(e.cls)) {
-      out.push("", `${"#".repeat(level + 1)} ${body}`, "");
+      out.push("", `${"#".repeat(level)} ${body}`, "");
     } else if (e.cls === "line-accent" || e.cls === "line-highlight") {
       out.push(`**${body}**`, "");
     } else {
@@ -94,55 +129,83 @@ function blockMd(block, { level = 2, subheads = [] } = {}) {
   return out;
 }
 
-export function llmsText(sections, experience) {
-  const out = [
+const tidy = parts => parts.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
+
+const SUBHEADS = {
+  skills: ["line-highlight"],
+  experience: ["line-accent"],
+  projects: ["line-accent"],
+  education: ["line-accent"],
+};
+
+/** One markdown file per section, keyed by the command it corresponds to. */
+export function sectionMd(cmd, sections, experience) {
+  const meta = SECTIONS.find(s => s.cmd === cmd);
+  const parts = [`# ${meta.title}`, "", `> ${meta.blurb}`, ""];
+  parts.push(...blockMd(sections[cmd], {
+    subheads: SUBHEADS[cmd] || [],
+    skipTitle: true,
+  }));
+  // `experience` lists the roles; the detail blocks behind `experience <role>`
+  // hold the bullets, so they belong in the same file.
+  if (cmd === "experience") {
+    for (const block of Object.values(experience)) {
+      parts.push(...blockMd(block, { level: 2 }));
+    }
+  }
+  return tidy(parts);
+}
+
+/** The index itself: H1, summary, then links to the files above. */
+export function llmsIndex() {
+  const parts = [
     `# ${IDENTITY.name}`,
     "",
-    `> ${IDENTITY.title}. Resume, projects and contact details for ${IDENTITY.name},`,
-    `> served from ${SITE} as an interactive CRT terminal. This file carries the`,
-    "> same content as plain markdown, generated from the site's own data.",
+    `> ${IDENTITY.title}. ${SITE} is an interactive CRT terminal; each section`,
+    "> below is what one of its commands prints, as plain markdown.",
+    "",
+    "## Resume",
     "",
   ];
-  out.push(...blockMd(sections.about));
-  out.push(...blockMd(sections.contact));
-  out.push(...blockMd(sections.skills, { subheads: ["line-highlight"] }));
-  out.push(...blockMd(sections.experience, { subheads: ["line-accent"] }));
-  // The experience section lists the roles; the detail blocks hold the bullets.
-  for (const block of Object.values(experience)) {
-    out.push(...blockMd(block, { level: 3 }));
+  for (const s of SECTIONS) {
+    parts.push(`- [${s.title}](${SITE}/${s.cmd}.md): ${s.blurb}`);
   }
-  out.push(...blockMd(sections.projects, { subheads: ["line-accent"] }));
-  out.push(...blockMd(sections.education, { subheads: ["line-accent"] }));
+  return tidy(parts);
+}
 
-  // Collapse the blank lines the block renderer leaves at joins.
-  return out.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
+/** Every generated file, as path (relative to the repo root) -> contents. */
+export function llmsFiles(sections, experience) {
+  const files = new Map([["llms.txt", llmsIndex()]]);
+  for (const s of SECTIONS) {
+    files.set(`${s.cmd}.md`, sectionMd(s.cmd, sections, experience));
+  }
+  return files;
 }
 
 export function readSources() {
   const json = f => JSON.parse(readFileSync(join(ROOT, f), "utf8"));
   return {
-    current: readFileSync(join(ROOT, "llms.txt"), "utf8"),
     sections: json("data/sections.json"),
     experience: json("data/experience.json"),
+    read: path => (existsSync(join(ROOT, path)) ? readFileSync(join(ROOT, path), "utf8") : null),
   };
 }
 
 if (process.argv[1] && import.meta.url === `file://${process.argv[1]}`) {
-  const json = f => JSON.parse(readFileSync(join(ROOT, f), "utf8"));
-  const next = llmsText(json("data/sections.json"), json("data/experience.json"));
-  const path = join(ROOT, "llms.txt");
-  let current = "";
-  try { current = readFileSync(path, "utf8"); } catch { /* first run */ }
+  const { sections, experience, read } = readSources();
+  const files = llmsFiles(sections, experience);
+  const stale = [...files].filter(([path, body]) => read(path) !== body).map(([p]) => p);
+
   if (process.argv.includes("--check")) {
-    if (next !== current) {
-      console.error("llms.txt is stale — run: node tools/gen-llms.mjs");
+    if (stale.length) {
+      console.error(`stale, run node tools/gen-llms.mjs: ${stale.join(", ")}`);
       process.exit(1);
     }
-    console.log("llms.txt is current");
-  } else if (next === current) {
-    console.log("llms.txt already current");
+    console.log(`${files.size} generated files are current`);
+  } else if (!stale.length) {
+    console.log(`${files.size} generated files already current`);
   } else {
-    writeFileSync(path, next);
-    console.log("llms.txt updated");
+    for (const path of stale) writeFileSync(join(ROOT, path), files.get(path));
+    console.log(`updated: ${stale.join(", ")}`);
   }
 }

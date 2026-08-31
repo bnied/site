@@ -112,7 +112,7 @@ committed, and their tests fail if they drift from `data/`:
 
 ```bash
 npm run noscript   # the <noscript> fallback inside index.html
-npm run llms       # llms.txt, the resume as plain markdown
+npm run llms       # llms.txt and the per-section .md files it indexes
 ```
 
 ## License
